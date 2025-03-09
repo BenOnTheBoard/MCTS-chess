@@ -1,8 +1,10 @@
 import random
+
+from engine.heuristics.heuristicInterface import HeuristicInterface
 from engine.utils import captured_piece
 
 
-class BestCapture:
+class BestCapture(HeuristicInterface):
     def evaluate(self, state):
         move_list = []
         best_capture = None
