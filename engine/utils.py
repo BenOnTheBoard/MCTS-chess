@@ -1,7 +1,7 @@
 import chess
 import math
 
-from values import PIECE_VALUES
+from engine.values import PIECE_VALUES
 
 
 def node_comparator(node):

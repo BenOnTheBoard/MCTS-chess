@@ -1,13 +1,12 @@
 import math
-import random
 from copy import deepcopy
 from time import perf_counter
 
 import chess
 
-from node import Node
-from utils import (
-    captured_piece,
+from engine.heuristics.bestCapture import BestCapture
+from engine.node import Node
+from engine.utils import (
     get_best_move,
     material_balance,
     node_comparator,
@@ -21,7 +20,9 @@ class MCTS:
         self.time_out = 120  # sec
         self.position = position
 
-    def tree_policy_child(self, node, is_maximizing_player):
+        self.rollout_heuristic = BestCapture()
+
+    def tree_policy(self, node, is_maximizing_player):
         if node.is_leaf():
             return node
 
@@ -54,27 +55,13 @@ class MCTS:
 
         return best_node
 
-    def simulation_policy_child(self, state):
+    def rollout_policy(self, state):
         while not state.is_game_over():
             p_map = state.piece_map()
             if len(p_map) <= 6:
                 return material_balance(p_map)
 
-            move_list = []
-            best_capture = None
-            best_captured_piece = -1
-            for move in state.legal_moves:
-                move_list.append(move)
-                if state.is_capture(move):
-                    captured = captured_piece(state, move)
-                    if captured > best_captured_piece:
-                        best_capture = move
-                        best_captured_piece = captured
-
-            if best_capture is not None:
-                choice_move = best_capture
-            else:
-                choice_move = random.choice(move_list)
+            choice_move = self.rollout_heuristic.evaluate(state)
             state.push(choice_move)
 
         outcome = state.outcome().winner
@@ -100,16 +87,16 @@ class MCTS:
 
             node, state = self.root_node, deepcopy(self.position)
 
-            while not node.is_leaf():  # select leaf
-                node = self.tree_policy_child(node, state.turn)
+            while not node.is_leaf():
+                node = self.tree_policy(node, state.turn)
                 state.push(node.move)
 
-            node.expand_node(state)  # expand
-            node = self.tree_policy_child(node, state.turn)
+            node.expand_node(state)
+            node = self.tree_policy(node, state.turn)
 
-            result = self.simulation_policy_child(state)  # simulate
+            result = self.rollout_policy(state)
 
-            while node.has_parent():  # propagate
+            while node.has_parent():
                 node.update(result)
                 node = node.parent
             self.root_node.update(result)
