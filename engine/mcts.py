@@ -56,13 +56,14 @@ class MCTS:
         return best_node
 
     def rollout_policy(self, state):
+        state_piece_count = len(state.piece_map())
         state_str = " ".join(state.fen().split()[:-2])
         if state_str in self.seen_states:
             return self.seen_states[state_str]
 
         while not state.is_game_over():
             p_map = state.piece_map()
-            if len(p_map) <= 6:
+            if len(p_map) <= 6 and state_piece_count > 8:
                 mat_bal = material_balance(p_map)
                 self.seen_states[state_str] = mat_bal
                 return mat_bal
@@ -111,8 +112,9 @@ class MCTS:
         return get_best_move(self.root_node, self.position.turn)
 
 
-start_fen = "rnb1kb1r/ppp1pppp/5n2/3q4/8/2N5/PPPP1PPP/R1BQKBNR w KQkq - 0 1"
+# start_fen = "rnb1kb1r/ppp1pppp/5n2/3q4/8/2N5/PPPP1PPP/R1BQKBNR w KQkq - 0 1"
 # start_fen = "rnbqkb1r/ppp1pppp/8/8/2n5/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1"
+start_fen = "5k1n/5ppp/7N/2q5/8/8/1K6/6R1 w - - 2 2"
 origin = chess.Board(fen=start_fen)
 print(origin)
 mcts = MCTS(origin)
