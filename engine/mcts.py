@@ -23,6 +23,19 @@ class MCTS:
 
         self.rollout_heuristic = BestCapture()
 
+    def add_move(self, move):
+        found_child = False
+        for child in self.root_node.children:
+            if child.move == move:
+                child.parent = None
+                self.root_node = child
+                found_child = True
+                break
+        if not found_child:
+            self.root_node = Node(None, None)
+
+        self.position.push(move)
+
     def tree_policy(self, node, is_maximizing_player):
         if node.is_leaf():
             return node
