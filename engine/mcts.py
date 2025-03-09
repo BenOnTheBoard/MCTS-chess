@@ -2,24 +2,17 @@ import math
 from copy import deepcopy
 from time import perf_counter
 
-import chess
-
 from engine.heuristics.bestCapture import BestCapture
 from engine.node import Node
-from engine.utils import (
-    get_best_move,
-    material_balance,
-    node_comparator,
-)
+from engine.utils import get_best_move, material_balance
 from engine.values import OUTCOMES
 
 
 class MCTS:
     def __init__(self, position, time_out):
         self.root_node = Node(None, None)
-        self.count = 0
         self.time_out = time_out  # sec
-        self.position = position
+        self.position = position.copy()
 
         self.rollout_heuristic = BestCapture()
 
@@ -32,6 +25,7 @@ class MCTS:
                 found_child = True
                 break
         if not found_child:
+            print("Not really meant to happen.")
             self.root_node = Node(None, None)
 
         self.position.push(move)
@@ -80,17 +74,7 @@ class MCTS:
 
     def get_move(self):
         start = perf_counter()
-        count = 0
         while (perf_counter() - start) < self.time_out:
-            count += 1
-            if count % 1000 == 0:
-                elapsed_time = perf_counter() - start
-                print(f"""
-                Elapsed time: {elapsed_time // 60} min and {elapsed_time % 60:.2f} s
-                Iters: {count} it
-                Rate: {(count / elapsed_time):.2f} it/s
-                """)
-
             node, state = self.root_node, deepcopy(self.position)
 
             while not node.is_leaf():
@@ -106,12 +90,6 @@ class MCTS:
                 node.update(result)
                 node = node.parent
             self.root_node.update(result)
-
-        self.root_node.children.sort(key=node_comparator)
-        for top_kid in self.root_node.children:
-            print(top_kid.move, node_comparator(top_kid))
-
-        print(f"Runs: {count}")
 
         return get_best_move(self.root_node, self.position.turn)
 

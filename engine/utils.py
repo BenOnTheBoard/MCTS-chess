@@ -4,12 +4,6 @@ import math
 from engine.values import PIECE_VALUES
 
 
-def node_comparator(node):
-    if node.visits == 0:
-        return 0.5
-    return node.score / node.visits
-
-
 def captured_piece(state, move):
     if state.is_en_passant(move):
         return chess.PAWN
@@ -30,6 +24,12 @@ def material_balance(piece_map):
             diff -= PIECE_VALUES[piece.piece_type]
 
     return 1 / (1 + math.exp(-diff / 200))
+
+
+def node_comparator(node):
+    if node.visits == 0:
+        return 0.5
+    return node.score / node.visits
 
 
 def get_best_move(node, is_white):
