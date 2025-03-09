@@ -21,6 +21,8 @@ class MCTS:
         self.time_out = 120  # sec
         self.position = position
 
+        self.seen_states = {}
+
         self.rollout_heuristic = BestCapture()
 
     def tree_policy(self, node, is_maximizing_player):
@@ -54,15 +56,23 @@ class MCTS:
         return best_node
 
     def rollout_policy(self, state):
+        state_str = " ".join(state.fen().split()[:-2])
+        if state_str in self.seen_states:
+            return self.seen_states[state_str]
+
         while not state.is_game_over():
             p_map = state.piece_map()
             if len(p_map) <= 6:
-                return material_balance(p_map)
+                mat_bal = material_balance(p_map)
+                self.seen_states[state_str] = mat_bal
+                return mat_bal
 
             choice_move = self.rollout_heuristic.evaluate(state)
             state.push(choice_move)
 
-        return OUTCOMES[state.outcome().winner]
+        result = OUTCOMES[state.outcome().winner]
+        self.seen_states[state_str] = result
+        return result
 
     def get_move(self):
         start = perf_counter()
@@ -101,8 +111,8 @@ class MCTS:
         return get_best_move(self.root_node, self.position.turn)
 
 
-# start_fen = "rnb1kb1r/ppp1pppp/5n2/3q4/8/2N5/PPPP1PPP/R1BQKBNR w KQkq - 0 1"
-start_fen = "rnbqkb1r/ppp1pppp/8/8/2n5/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1"
+start_fen = "rnb1kb1r/ppp1pppp/5n2/3q4/8/2N5/PPPP1PPP/R1BQKBNR w KQkq - 0 1"
+# start_fen = "rnbqkb1r/ppp1pppp/8/8/2n5/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1"
 origin = chess.Board(fen=start_fen)
 print(origin)
 mcts = MCTS(origin)
