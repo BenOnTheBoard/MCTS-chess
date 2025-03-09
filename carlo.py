@@ -1,49 +1,17 @@
-import chess
-from copy import deepcopy
 import math
 import random
-from statistics import mean
-from time import perf_counter, perf_counter_ns
+from copy import deepcopy
+from time import perf_counter
 
-PIECE_VALUES = {
-    chess.PAWN: 100,
-    chess.KNIGHT: 305,
-    chess.BISHOP: 333,
-    chess.ROOK: 563,
-    chess.QUEEN: 950,
-    chess.KING: 10_000,
-}
+import chess
 
-
-class Node:
-    def __init__(self, move, parent):  # move is from parent to node
-        self.move = move
-        self.parent = parent
-        self.children = []
-        self.score = 0
-        self.visits = 0
-
-    def expand_node(self, state):
-        if not state.is_game_over():
-            for move in state.legal_moves:
-                new_child = Node(move, self)
-                self.children.append(new_child)
-
-    def update(self, result):
-        self.visits += 1
-        self.score += result
-
-    def is_leaf(self):
-        return len(self.children) == 0
-
-    def has_parent(self):
-        return self.parent is not None
-
-
-def node_comparator(node):
-    if node.visits == 0:
-        return 0.5
-    return node.score / node.visits
+from node import Node
+from utils import (
+    captured_piece,
+    get_best_move,
+    material_balance,
+    node_comparator,
+)
 
 
 def tree_policy_child(node, is_maximizing_player):
@@ -80,24 +48,6 @@ def tree_policy_child(node, is_maximizing_player):
     return best_node
 
 
-def captured_piece(state, move):
-    if state.is_en_passant(move):
-        return chess.PAWN
-    else:
-        return state.piece_at(move.to_square).piece_type
-
-
-def material_balance(piece_map):
-    diff = 0
-    for piece in piece_map.values():
-        if piece.color:
-            diff += PIECE_VALUES[piece.piece_type]
-        else:
-            diff -= PIECE_VALUES[piece.piece_type]
-
-    return 1 / (1 + math.exp(-diff / 200))
-
-
 def simulation_policy_child(state):
     while not state.is_game_over():
         p_map = state.piece_map()
@@ -128,14 +78,6 @@ def simulation_policy_child(state):
         return 0
     else:
         return 0.5
-
-
-def best_move(root, is_white):
-    root.children.sort(key=node_comparator)
-    if is_white:
-        return root.children[-1].move
-    else:
-        return root.children[0].move
 
 
 def mcts(root_state, time_out):
@@ -174,7 +116,7 @@ def mcts(root_state, time_out):
     for top_kid in root_node.children:
         print(top_kid.move, node_comparator(top_kid))
 
-    return best_move(root_node, root_state.turn)
+    return get_best_move(root_node, root_state.turn)
 
 
 # start_fen = "rnb1kb1r/ppp1pppp/5n2/3q4/8/2N5/PPPP1PPP/R1BQKBNR w KQkq - 0 1"
