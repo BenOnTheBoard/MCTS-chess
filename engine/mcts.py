@@ -11,6 +11,7 @@ from engine.utils import (
     material_balance,
     node_comparator,
 )
+from engine.values import OUTCOMES
 
 
 class MCTS:
@@ -36,19 +37,16 @@ class MCTS:
             if child.visits == 0:
                 return child
 
-            child_ratio = child.score / child.visits
+            child_quality = child.score / child.visits
+            exploring_term = math.sqrt(2 * math.log(node.visits) / child.visits)
 
             if is_maximizing_player:
-                uct_value = child_ratio + math.sqrt(
-                    2 * math.log(node.visits) / child.visits
-                )
+                uct_value = child_quality + exploring_term
                 if uct_value > best_uct:
                     best_uct = uct_value
                     best_node = child
             else:
-                uct_value = child_ratio - math.sqrt(
-                    2 * math.log(node.visits) / child.visits
-                )
+                uct_value = child_quality - exploring_term
                 if uct_value < best_uct:
                     best_uct = uct_value
                     best_node = child
@@ -64,13 +62,7 @@ class MCTS:
             choice_move = self.rollout_heuristic.evaluate(state)
             state.push(choice_move)
 
-        outcome = state.outcome().winner
-        if outcome == chess.WHITE:
-            return 1
-        elif outcome == chess.BLACK:
-            return 0
-        else:
-            return 0.5
+        return OUTCOMES[state.outcome().winner]
 
     def get_move(self):
         start = perf_counter()
