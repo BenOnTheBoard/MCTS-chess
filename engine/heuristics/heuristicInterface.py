@@ -1,5 +1,5 @@
 class HeuristicInterface:
-    def evaluate(state):
+    def evaluate(self, state):
         """
         Return a move based on a heuristic
         """

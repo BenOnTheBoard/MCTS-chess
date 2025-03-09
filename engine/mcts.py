@@ -1,9 +1,9 @@
-import math
 from copy import deepcopy
 from time import perf_counter
 
 from engine.heuristics.bestCapture import BestCapture
 from engine.node import Node
+from engine.nodeEvaluators.UCT import UCT
 from engine.utils import get_best_move, material_balance
 from engine.values import OUTCOMES
 
@@ -14,6 +14,7 @@ class MCTS:
         self.time_out = time_out  # sec
         self.position = position.copy()
 
+        self.node_evaluator = UCT()
         self.rollout_heuristic = BestCapture()
 
     def add_move(self, move):
@@ -30,32 +31,29 @@ class MCTS:
 
         self.position.push(move)
 
-    def tree_policy(self, node, is_maximizing_player):
+    def tree_policy(self, node, is_max_player):
         if node.is_leaf():
             return node
 
-        if is_maximizing_player:
-            best_uct = -float("inf")
+        if is_max_player:
+            best_value = -float("inf")
         else:
-            best_uct = float("inf")
+            best_value = float("inf")
         best_node = None
 
         for child in node.children:
             if child.visits == 0:
                 return child
 
-            child_quality = child.score / child.visits
-            exploring_term = math.sqrt(2 * math.log(node.visits) / child.visits)
+            child_value = self.node_evaluator.evaluate(child, node, is_max_player)
 
-            if is_maximizing_player:
-                uct_value = child_quality + exploring_term
-                if uct_value > best_uct:
-                    best_uct = uct_value
+            if is_max_player:
+                if child_value > best_value:
+                    best_value = child_value
                     best_node = child
             else:
-                uct_value = child_quality - exploring_term
-                if uct_value < best_uct:
-                    best_uct = uct_value
+                if child_value < best_value:
+                    best_value = child_value
                     best_node = child
 
         return best_node
@@ -92,12 +90,3 @@ class MCTS:
             self.root_node.update(result)
 
         return get_best_move(self.root_node, self.position.turn)
-
-
-# start_fen = "rnbqkb1r/ppp1pppp/8/8/2n5/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1"
-# start_fen = "6kn/3q1ppp/8/8/6N1/8/1K6/6R1 w - - 0 1"
-# start_fen = "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3"
-# origin = chess.Board(fen=start_fen)
-# print(origin)
-# mcts = MCTS(origin, 10)
-# print("Chose:", mcts.get_move())

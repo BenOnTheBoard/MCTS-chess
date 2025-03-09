@@ -1,0 +1,13 @@
+import math
+from engine.nodeEvaluators.evaluatorInterface import EvaluatorInterface
+
+
+class UCT(EvaluatorInterface):
+    def evaluate(self, child, node, is_max_player):
+        child_quality = child.score / child.visits
+        exploring_term = math.sqrt(2 * math.log(node.visits) / child.visits)
+
+        if is_max_player:
+            return child_quality + exploring_term
+        else:
+            return child_quality - exploring_term
