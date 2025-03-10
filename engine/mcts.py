@@ -17,6 +17,10 @@ class MCTS:
         self.node_evaluator = UCT(1.4)
         self.rollout_heuristic = BestCapture()
 
+    def set_position(self, new_position):
+        self.root_node = Node(None, None)
+        self.position = new_position.copy()
+
     def add_move(self, move):
         found_child = False
         for child in self.root_node.children:
@@ -87,7 +91,5 @@ class MCTS:
                 node.update(result)
                 node = node.parent
             self.root_node.update(result)
-
-            print(get_best_move(self.root_node, self.position.turn))
 
         return get_best_move(self.root_node, self.position.turn)
