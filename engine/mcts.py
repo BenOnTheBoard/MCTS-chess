@@ -14,7 +14,7 @@ class MCTS:
         self.time_out = time_out  # sec
         self.position = position.copy()
 
-        self.node_evaluator = UCT()
+        self.node_evaluator = UCT(1.4)
         self.rollout_heuristic = BestCapture()
 
     def add_move(self, move):
@@ -26,7 +26,6 @@ class MCTS:
                 found_child = True
                 break
         if not found_child:
-            print("Not really meant to happen.")
             self.root_node = Node(None, None)
 
         self.position.push(move)
@@ -88,5 +87,7 @@ class MCTS:
                 node.update(result)
                 node = node.parent
             self.root_node.update(result)
+
+            print(get_best_move(self.root_node, self.position.turn))
 
         return get_best_move(self.root_node, self.position.turn)
