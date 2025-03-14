@@ -33,5 +33,3 @@ while not mcts.position.is_game_over():
 
     print()
     print(mcts.position)
-
-    quit()

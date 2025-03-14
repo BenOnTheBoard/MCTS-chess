@@ -61,18 +61,6 @@ class MCTS:
 
         return best_node
 
-    def rollout_policy(self, state):
-        state_piece_count = len(state.piece_map())
-        while not state.is_game_over():
-            p_map = state.piece_map()
-            if len(p_map) <= 6 and state_piece_count > 8:
-                return material_balance(p_map)
-
-            choice_move = self.rollout_heuristic.evaluate(state)
-            state.push(choice_move)
-
-        return OUTCOMES[state.outcome().winner]
-
     def get_move(self):
         start = perf_counter()
         while (perf_counter() - start) < self.time_out:
@@ -85,7 +73,7 @@ class MCTS:
             node.expand_node(state)
             node = self.tree_policy(node, state.turn)
 
-            result = self.rollout_policy(state)
+            result = self.rollout_heuristic.evaluate(state)
 
             while node.has_parent():
                 node.update(result)

@@ -1,11 +1,11 @@
 import random
 
-from engine.heuristics.heuristicInterface import HeuristicInterface
+from engine.heuristics.perMoveHeuristic import PerMoveHeuristic
 from engine.utils import captured_piece
 
 
-class BestCapture(HeuristicInterface):
-    def evaluate(self, state):
+class BestCapture(PerMoveHeuristic):
+    def select_move(self, state):
         move_list = []
         best_capture = None
         best_captured_piece = -1
