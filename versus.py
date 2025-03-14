@@ -1,11 +1,11 @@
 import chess
 import requests
 
+from engine.heuristics.tableBased.pieceTable import PieceTable
 from engine.mcts import MCTS
 
+
 # Versus Stockfish
-
-
 def extract_stockfish_move(response):
     move_text = response.json()["bestmove"].split()[1]
     move = chess.Move.from_uci(move_text)
@@ -17,7 +17,7 @@ parameters = {"fen": None, "depth": 12}
 
 
 board = chess.Board()
-mcts = MCTS(board, 5)
+mcts = MCTS(board, 20, PieceTable)
 while not mcts.position.is_game_over():
     white_choice = mcts.get_move()
     print(mcts.root_node.visits)
@@ -26,9 +26,12 @@ while not mcts.position.is_game_over():
     print()
     print(mcts.position)
 
-    parameters["fen"] = mcts.position.fen()
-    response = requests.get(url, params=parameters)
-    black_choice = extract_stockfish_move(response)
+    # parameters["fen"] = mcts.position.fen()
+    # response = requests.get(url, params=parameters)
+    # black_choice = extract_stockfish_move(response)
+    # mcts.add_move(black_choice)
+
+    black_choice = chess.Move.from_uci(input("Your move:"))
     mcts.add_move(black_choice)
 
     print()

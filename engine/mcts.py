@@ -1,21 +1,19 @@
 from copy import deepcopy
 from time import perf_counter
 
-from engine.heuristics.bestCapture import BestCapture
 from engine.node import Node
 from engine.nodeEvaluators.UCT import UCT
-from engine.utils import get_best_move, material_balance
-from engine.values import OUTCOMES
+from engine.utils import get_best_move
 
 
 class MCTS:
-    def __init__(self, position, time_out):
+    def __init__(self, position, time_out, rollout_heuristic):
         self.root_node = Node(None, None)
         self.time_out = time_out  # sec
         self.position = position.copy()
 
         self.node_evaluator = UCT(1.4)
-        self.rollout_heuristic = BestCapture()
+        self.rollout_heuristic = rollout_heuristic()
 
     def set_position(self, new_position):
         self.root_node = Node(None, None)
