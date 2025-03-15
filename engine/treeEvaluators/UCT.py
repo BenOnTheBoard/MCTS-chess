@@ -1,5 +1,5 @@
 import math
-from engine.nodeEvaluators.evaluatorInterface import EvaluatorInterface
+from engine.treeEvaluators.evaluatorInterface import EvaluatorInterface
 
 
 class UCT(EvaluatorInterface):

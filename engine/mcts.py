@@ -2,18 +2,17 @@ from copy import deepcopy
 from time import perf_counter
 
 from engine.node import Node
-from engine.nodeEvaluators.UCT import UCT
 from engine.utils import get_best_move
 
 
 class MCTS:
-    def __init__(self, position, time_out, rollout_heuristic):
+    def __init__(self, position, time_out, tree_evaluator, rollout_heuristic):
         self.root_node = Node(None, None)
         self.time_out = time_out  # sec
         self.position = position.copy()
 
-        self.node_evaluator = UCT(1.4)
-        self.rollout_heuristic = rollout_heuristic()
+        self.tree_evaluator = tree_evaluator
+        self.rollout_heuristic = rollout_heuristic
 
     def set_position(self, new_position):
         self.root_node = Node(None, None)
@@ -32,11 +31,11 @@ class MCTS:
 
         self.position.push(move)
 
-    def tree_policy(self, node, is_max_player):
+    def tree_policy(self, node, is_white):
         if node.is_leaf():
             return node
 
-        if is_max_player:
+        if is_white:
             best_value = -float("inf")
         else:
             best_value = float("inf")
@@ -46,9 +45,9 @@ class MCTS:
             if child.visits == 0:
                 return child
 
-            child_value = self.node_evaluator.evaluate(child, node, is_max_player)
+            child_value = self.tree_evaluator.evaluate(child, node, is_white)
 
-            if is_max_player:
+            if is_white:
                 if child_value > best_value:
                     best_value = child_value
                     best_node = child

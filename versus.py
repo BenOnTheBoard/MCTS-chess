@@ -3,6 +3,7 @@ import requests
 
 from engine.heuristics.tableBased.pieceTable import PieceTable
 from engine.mcts import MCTS
+from engine.treeEvaluators.UCT import UCT
 
 
 # Versus Stockfish
@@ -17,21 +18,23 @@ parameters = {"fen": None, "depth": 12}
 
 
 board = chess.Board()
-mcts = MCTS(board, 20, PieceTable)
+for move in ["e4"]:
+    board.push_san(move)
+
+
+mcts = MCTS(board, 10, UCT(1.4), PieceTable())
 while not mcts.position.is_game_over():
     white_choice = mcts.get_move()
     print(mcts.root_node.visits)
+    print([child.move.uci() for child in mcts.root_node.children])
     mcts.add_move(white_choice)
 
     print()
     print(mcts.position)
 
-    # parameters["fen"] = mcts.position.fen()
-    # response = requests.get(url, params=parameters)
-    # black_choice = extract_stockfish_move(response)
-    # mcts.add_move(black_choice)
-
-    black_choice = chess.Move.from_uci(input("Your move:"))
+    parameters["fen"] = mcts.position.fen()
+    response = requests.get(url, params=parameters)
+    black_choice = extract_stockfish_move(response)
     mcts.add_move(black_choice)
 
     print()
