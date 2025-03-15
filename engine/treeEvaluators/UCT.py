@@ -1,4 +1,5 @@
-import math
+from math import log, sqrt
+
 from engine.treeEvaluators.evaluatorInterface import EvaluatorInterface
 
 
@@ -8,7 +9,7 @@ class UCT(EvaluatorInterface):
 
     def evaluate(self, child, node, is_max_player):
         child_quality = child.score / child.visits
-        exploring_term = self.C * math.sqrt(math.log(node.visits) / child.visits)
+        exploring_term = self.C * sqrt(log(node.visits) / child.visits)
 
         if is_max_player:
             return child_quality + exploring_term
