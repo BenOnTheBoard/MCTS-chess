@@ -1,44 +1,38 @@
-import chess
 from copy import deepcopy
+
+import chess
+import chess.engine
 import numpy as np
 
 from engine.heuristics.tableBased.pieceTable import PieceTable
-from engine.mcts import MCTS
 from engine.heuristics.tableBased.tables import TABLES
-from engine.treeEvaluators.UCT import UCT
-from engine.values import OUTCOMES
 
-L_RATE = 2
+L_RATE = 200
+stockfish = chess.engine.SimpleEngine.popen_uci(
+    r"stockfish\stockfish-windows-x86-64-avx2.exe"
+)
 
 tables = deepcopy(TABLES)
 
-for round in range(10):
+for round in range(1000):
     print(round)
-    dataset = dict()
+    board = chess.Board()
 
     game_history = []
-    mcts = MCTS(chess.Board(), 1, UCT(1.5), PieceTable(tables))
-
-    while not mcts.position.is_game_over():
-        white_choice = mcts.get_move()
-        mcts.add_move(white_choice)
-
+    while not board.is_game_over():
+        result = stockfish.play(board, chess.engine.Limit(depth=20))
+        board.push(result.move)
         game_history.append(
             (
-                mcts.position.fen(),
-                PieceTable().evaluate(mcts.position),
+                board.fen(),
+                PieceTable(tables).evaluate(board),
+                stockfish.analyse(board, chess.engine.Limit(depth=20)),
             )
         )
 
-    result = OUTCOMES[mcts.position.outcome().winner]
-
-    for fen, prediction in game_history:
-        dataset[fen] = (prediction, result)
-
-    for fen, data in dataset.items():
+    for fen, v, r in game_history:
+        print(f"{fen}\t\t{v}\t{r}")
         l_state = chess.Board(fen=fen)
-        v = data[0]
-        r = data[1]
         for square in chess.SQUARES:
             row, col = divmod(square, 8)
             piece = l_state.piece_at(square)
@@ -48,9 +42,12 @@ for round in range(10):
                 if l_state.turn == chess.WHITE:
                     piece_table[7 - row][col] += l_step
                 elif l_state.turn == chess.BLACK:
-                    piece_table[row][col] += l_step
+                    piece_table[row][col] -= l_step
 
-np.set_printoptions(precision=3)
-for table in tables.values():
-    print(table)
-    print()
+    if round % 10 == 0:
+        np.set_printoptions(precision=3)
+        for table in tables.values():
+            print(table)
+            print()
+
+    quit()

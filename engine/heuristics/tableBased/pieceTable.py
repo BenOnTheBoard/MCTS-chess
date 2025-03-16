@@ -1,10 +1,8 @@
-from math import exp
-
 import chess
 
 from engine.heuristics.heuristicInterface import HeuristicInterface
 from engine.heuristics.tableBased.tables import TABLES
-from engine.values import PIECE_VALUES, OUTCOMES
+from engine.values import PIECE_VALUES
 
 
 class PieceTable(HeuristicInterface):
