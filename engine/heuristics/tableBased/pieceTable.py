@@ -4,23 +4,29 @@ import chess
 
 from engine.heuristics.heuristicInterface import HeuristicInterface
 from engine.heuristics.tableBased.tables import TABLES
-from engine.values import PIECE_VALUES
+from engine.values import PIECE_VALUES, OUTCOMES
 
 
 class PieceTable(HeuristicInterface):
-    def evaluate(self, state):
-        score = 0
+    def __init__(self, tables=TABLES):
+        self.tables = tables
 
+    def evaluate(self, state):
+        if state.is_game_over():
+            return OUTCOMES[state.outcome().winner]
+
+        score = 0
         for square in chess.SQUARES:
             row, col = divmod(square, 8)
             piece = state.piece_at(square)
             if piece is not None:
                 piece_val = PIECE_VALUES[piece.piece_type]
-                piece_modifier = TABLES[piece.piece_type][row][col]
-
+                piece_table = self.tables[piece.piece_type]
                 if piece.color == chess.WHITE:
-                    score += piece_val + piece_modifier
+                    piece_bonus = piece_table[7 - row][col]
+                    score += piece_val + piece_bonus
                 else:
-                    score -= piece_val + piece_modifier
+                    piece_bonus = piece_table[row][col]
+                    score -= piece_val + piece_bonus
 
-        return 1 / (1 + exp(-score / 200))
+        return 1 / (1 + exp(-score / 250))
