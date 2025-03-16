@@ -13,7 +13,13 @@ class PieceTable(HeuristicInterface):
 
     def evaluate(self, state):
         if state.is_game_over():
-            return OUTCOMES[state.outcome().winner]
+            winner = state.outcome().winner
+            if winner == chess.WHITE:
+                return PIECE_VALUES[chess.KING]
+            elif winner == chess.BLACK:
+                return -PIECE_VALUES[chess.KING]
+            else:
+                return 0
 
         score = 0
         for square in chess.SQUARES:
@@ -29,4 +35,4 @@ class PieceTable(HeuristicInterface):
                     piece_bonus = piece_table[row][col]
                     score -= piece_val + piece_bonus
 
-        return 1 / (1 + exp(-score / 250))
+        return score
