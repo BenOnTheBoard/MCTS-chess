@@ -1,5 +1,6 @@
 import chess
 from copy import deepcopy
+import numpy as np
 
 from engine.heuristics.tableBased.pieceTable import PieceTable
 from engine.mcts import MCTS
@@ -49,4 +50,7 @@ for round in range(10):
                 elif l_state.turn == chess.BLACK:
                     piece_table[row][col] += l_step
 
-print(tables)
+np.set_printoptions(precision=3)
+for table in tables.values():
+    print(table)
+    print()
