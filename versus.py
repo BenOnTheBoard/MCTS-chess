@@ -18,11 +18,8 @@ parameters = {"fen": None, "depth": 12}
 
 
 board = chess.Board()
-for move in ["e4"]:
-    board.push_san(move)
 
-
-mcts = MCTS(board, 10, UCT(1.4), PieceTable())
+mcts = MCTS(board, 30, UCT(0.2), PieceTable())
 while not mcts.position.is_game_over():
     white_choice = mcts.get_move()
     print(mcts.root_node.visits)
