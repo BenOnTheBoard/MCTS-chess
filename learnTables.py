@@ -4,14 +4,14 @@ import chess
 import chess.engine
 from math import log10
 import numpy as np
-from random import choice
+from random import choice, randint
 from tqdm import tqdm
 
 from engine.heuristics.tableBased.pieceTable import PieceTable
 from engine.heuristics.tableBased.tables import BLANK_TABLES, TABLES
 
-RAND_START_DEPTH = 6
-SF_SEARCH_DEPTH = 20
+RAND_START_DEPTH = 4
+SF_SEARCH_DEPTH = 18
 stockfish = chess.engine.SimpleEngine.popen_uci(
     r"stockfish\stockfish-windows-x86-64-avx2.exe"
 )
@@ -26,7 +26,7 @@ def setup_board():
     return start
 
 
-def sf_self_play(board):
+def sf_self_play(board, data_file):
     while not board.is_game_over() and board.ply() < 80:
         eval_dict = stockfish.analyse(board, chess.engine.Limit(depth=SF_SEARCH_DEPTH))
         sf_eval = eval_dict["score"].white().score()
@@ -34,14 +34,14 @@ def sf_self_play(board):
         board.push(sf_move)
 
         if sf_eval is not None:
-            with open(DATA_FILENAME, "a") as data_file:
-                data_file.write(f"{board.fen()}, {sf_eval}\n")
+            data_file.write(f"{board.fen()}, {sf_eval}\n")
 
 
 def generate(games):
-    for _ in tqdm(range(games)):
-        board = setup_board()
-        sf_self_play(board)
+    with open(DATA_FILENAME, "a") as data_file:
+        for _ in tqdm(range(games)):
+            board = setup_board()
+            sf_self_play(board, data_file)
 
 
 def train(tables, l_rate):
@@ -86,7 +86,12 @@ def pprint_tables(tables):
 def main():
     l_rate = 2
     rounds = 2_000
-    tables = deepcopy(TABLES)
+    tables = deepcopy(BLANK_TABLES)
+    for table in tables.values():
+        for row in table:
+            for elt in row:
+                elt += randint(-100, 100)
+        print(table)
     for round in tqdm(range(rounds)):
         error = train(tables, l_rate)
         print(f"\nRound: {round}, Error:{error} = 10 ^ {log10(error)}")
@@ -94,4 +99,5 @@ def main():
 
 
 if __name__ == "__main__":
+    generate(10)
     main()
