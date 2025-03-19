@@ -1,5 +1,5 @@
 import chess
-import requests
+import chess.engine
 
 from engine.heuristics.tableBased.pieceTable import PieceTable
 from engine.mcts import MCTS
@@ -13,13 +13,14 @@ def extract_stockfish_move(response):
     return move
 
 
-url = "https://stockfish.online/api/s/v2.php"
-parameters = {"fen": None, "depth": 12}
-
+SF_SEARCH_DEPTH = 12
+stockfish = chess.engine.SimpleEngine.popen_uci(
+    r"stockfish\stockfish-windows-x86-64-avx2.exe"
+)
 
 board = chess.Board()
 
-mcts = MCTS(board, 20, UCT(0.4), PieceTable())
+mcts = MCTS(board, 20, UCT(3), PieceTable())
 while not mcts.position.is_game_over():
     white_choice = mcts.get_move()
     print(mcts.root_node.visits)
@@ -32,11 +33,8 @@ while not mcts.position.is_game_over():
 
     print()
     print(mcts.position)
-    break
 
-    parameters["fen"] = mcts.position.fen()
-    response = requests.get(url, params=parameters)
-    black_choice = extract_stockfish_move(response)
+    black_choice = stockfish.play(mcts.position, chess.engine.Limit(time=0.1)).move
     mcts.add_move(black_choice)
 
     print()
