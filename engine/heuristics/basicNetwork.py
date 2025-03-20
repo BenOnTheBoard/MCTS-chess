@@ -32,7 +32,4 @@ class BasicNetwork(HeuristicInterface):
 
         input_vector = torch.concatenate(input_sections)
         output_vector = self.model(input_vector)
-        return output_vector.item()
-
-
-print(BasicNetwork().evaluate(chess.Board()))
+        return output_vector
