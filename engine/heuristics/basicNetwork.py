@@ -12,8 +12,6 @@ class BasicNetwork(HeuristicInterface):
         self.model = torch.nn.Sequential(
             torch.nn.Linear(768, 192),
             torch.nn.SiLU(),
-            torch.nn.Linear(192, 192),
-            torch.nn.SiLU(),
             torch.nn.Linear(192, 1),
         )
 
