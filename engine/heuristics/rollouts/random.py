@@ -1,6 +1,6 @@
 import random
 
-from engine.heuristics.perMoveHeuristic import PerMoveHeuristic
+from engine.heuristics.rollouts.perMoveHeuristic import PerMoveHeuristic
 
 
 class Random(PerMoveHeuristic):
