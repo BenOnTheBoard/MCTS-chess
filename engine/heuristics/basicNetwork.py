@@ -2,6 +2,7 @@ import chess
 import torch
 
 from engine.heuristics.heuristicInterface import HeuristicInterface
+from engine.values import PIECE_VALUES
 
 
 class BasicNetwork(HeuristicInterface):
@@ -21,6 +22,15 @@ class BasicNetwork(HeuristicInterface):
         return bit_vector
 
     def evaluate(self, state):
+        if state.is_game_over():
+            winner = state.outcome().winner
+            if winner == chess.WHITE:
+                return PIECE_VALUES[chess.KING]
+            elif winner == chess.BLACK:
+                return -PIECE_VALUES[chess.KING]
+            else:
+                return 0
+
         input_sections = []
         for colour in chess.COLORS:
             for piece in chess.PIECE_TYPES:
