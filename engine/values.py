@@ -6,7 +6,7 @@ PIECE_VALUES = {
     chess.BISHOP: 333,
     chess.ROOK: 563,
     chess.QUEEN: 950,
-    chess.KING: 0,
+    chess.KING: 10_000,
 }
 
 OUTCOMES = {chess.WHITE: 1, chess.BLACK: 0, None: 0.5}
