@@ -1,7 +1,8 @@
 import chess
 import chess.engine
+import torch
 
-from engine.heuristics.tableBased.pieceTable import PieceTable
+from engine.heuristics.basicNetwork import BasicNetwork
 from engine.mcts import MCTS
 from engine.treeEvaluators.UCT import UCT
 
@@ -20,15 +21,15 @@ stockfish = chess.engine.SimpleEngine.popen_uci(
 
 board = chess.Board()
 
-mcts = MCTS(board, 20, UCT(3), PieceTable())
+model = torch.load("saved_model.pt", weights_only=False)
+
+mcts = MCTS(board, 20, UCT(100), BasicNetwork(model))
 while not mcts.position.is_game_over():
     white_choice = mcts.get_move()
     print(mcts.root_node.visits)
     print("Move analysis:")
     for child in mcts.root_node.children:
-        print(
-            f"{child.move.uci()}\t{child.score:.2f}\t{child.visits}\t{(child.score / child.visits):.2f}"
-        )
+        print(f"{child.move.uci()}\t{child.visits}\t{(child.score / child.visits):.2f}")
     mcts.add_move(white_choice)
 
     print()
