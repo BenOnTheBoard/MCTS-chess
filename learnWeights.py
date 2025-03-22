@@ -13,7 +13,7 @@ def main():
     tests_filename = "testing_data.txt"
     output_filename = "saved_model.pt"
     loss_fn = torch.nn.MSELoss()
-    rounds = 0
+    rounds = 10
     learning_rate = 1e-5
 
     with open(data_filename, "r") as data_file:
@@ -29,7 +29,7 @@ def main():
                 [int(y)],
                 dtype=torch.float,
             )
-            y_pred = BNet.evaluate(l_state)
+            y_pred = BNet.tensor_eval(l_state)
 
             loss = loss_fn(y_pred, y)
             total_loss += loss
@@ -54,7 +54,7 @@ def main():
             [int(y)],
             dtype=torch.float,
         )
-        y_pred = BNet.evaluate(l_state)
+        y_pred = BNet.tensor_eval(l_state)
 
         loss = loss_fn(y_pred, y)
         total_loss += loss

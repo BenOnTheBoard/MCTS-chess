@@ -21,16 +21,7 @@ class BasicNetwork(HeuristicInterface):
         bit_vector = torch.tensor(bit_list, dtype=torch.float)
         return bit_vector
 
-    def evaluate(self, state):
-        if state.is_game_over():
-            winner = state.outcome().winner
-            if winner == chess.WHITE:
-                return PIECE_VALUES[chess.KING]
-            elif winner == chess.BLACK:
-                return -PIECE_VALUES[chess.KING]
-            else:
-                return 0
-
+    def tensor_eval(self, state):
         input_sections = []
         for colour in chess.COLORS:
             for piece in chess.PIECE_TYPES:
@@ -41,3 +32,16 @@ class BasicNetwork(HeuristicInterface):
         input_vector = torch.concatenate(input_sections)
         output_vector = self.model(input_vector)
         return output_vector
+
+    def evaluate(self, state):
+        if state.is_game_over():
+            winner = state.outcome().winner
+            if winner == chess.WHITE:
+                return PIECE_VALUES[chess.KING]
+            elif winner == chess.BLACK:
+                return -PIECE_VALUES[chess.KING]
+            else:
+                return 0
+
+        output_vector = self.tensor_eval(state)
+        return output_vector.item()
