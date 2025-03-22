@@ -9,7 +9,7 @@ def main():
 
     data_filenames = (
         "training_data.txt",
-        "training_data_random.txt",
+        "training_data_rand.txt",
     )
     tests_filename = "testing_data.txt"
     output_filename = "saved_model.pt"
@@ -62,7 +62,7 @@ def main():
             test_loss += loss
 
         print(
-            f"Avg. Training Loss: {total_loss / len(dataset):.2f}\t\tAvg. Test Loss: {test_loss / len(testset):.2f}"
+            f"Round: {round}\tAvg. Training Loss: {total_loss / len(dataset):.2f}\t\tAvg. Test Loss: {test_loss / len(testset):.2f}"
         )
 
     torch.save(BNet.model, output_filename)
