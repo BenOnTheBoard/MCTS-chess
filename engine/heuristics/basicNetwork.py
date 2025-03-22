@@ -14,6 +14,7 @@ class BasicNetwork(HeuristicInterface):
                 torch.nn.Linear(768, 64),
                 torch.nn.ReLU(),
                 torch.nn.Linear(64, 1),
+                torch.nn.Sigmoid(),
             )
 
     def int_to_bit_vector(self, num):

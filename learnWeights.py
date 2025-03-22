@@ -35,6 +35,7 @@ def main():
                 [int(y)],
                 dtype=torch.float,
             )
+            y = torch.sigmoid(y)
             y_pred = BNet.tensor_eval(l_state)
 
             loss = loss_fn(y_pred, y)
@@ -56,13 +57,14 @@ def main():
                 [int(y)],
                 dtype=torch.float,
             )
+            y = torch.sigmoid(y)
             y_pred = BNet.tensor_eval(l_state)
 
             loss = loss_fn(y_pred, y)
             test_loss += loss
 
         print(
-            f"Round: {round}\tAvg. Training Loss: {total_loss / len(dataset):.2f}\t\tAvg. Test Loss: {test_loss / len(testset):.2f}"
+            f"Round: {round}\tAvg. Training Loss: {total_loss / len(dataset):.4f}\t\tAvg. Test Loss: {test_loss / len(testset):.4f}"
         )
 
     torch.save(BNet.model, output_filename)
