@@ -6,15 +6,15 @@ from engine.values import PIECE_VALUES
 
 
 class BasicNetwork(HeuristicInterface):
-    def __init__(self):
-        self.init_learning_rate = 0.1
-
-        # layers_lens: 2 * 6 * 64, 3 * 64, 3 * 64, 1
-        self.model = torch.nn.Sequential(
-            torch.nn.Linear(768, 192),
-            torch.nn.SiLU(),
-            torch.nn.Linear(192, 1),
-        )
+    def __init__(self, model=None):
+        if model is not None:
+            self.model = model
+        else:
+            self.model = torch.nn.Sequential(
+                torch.nn.Linear(768, 64),
+                torch.nn.ReLU(),
+                torch.nn.Linear(64, 1),
+            )
 
     def int_to_bit_vector(self, num):
         bit_list = [int(bit) for bit in bin(num)[2:].zfill(64)]
