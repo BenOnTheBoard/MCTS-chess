@@ -7,15 +7,20 @@ from engine.heuristics.basicNetwork import BasicNetwork
 def main():
     BNet = BasicNetwork()
 
-    data_filename = "training_data.txt"
+    data_filenames = (
+        "training_data.txt",
+        "training_data_random.txt",
+    )
     tests_filename = "testing_data.txt"
     output_filename = "saved_model.pt"
     loss_fn = torch.nn.MSELoss()
     rounds = 20
     learning_rate = 1e-5
 
-    with open(data_filename, "r") as data_file:
-        dataset = data_file.readlines()
+    dataset = []
+    for dfn in data_filenames:
+        with open(dfn, "r") as data_file:
+            dataset.extend(data_file.readlines())
 
     with open(tests_filename, "r") as test_data_file:
         testset = test_data_file.readlines()
