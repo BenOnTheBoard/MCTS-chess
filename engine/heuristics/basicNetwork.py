@@ -1,5 +1,6 @@
 import chess
 import torch
+import torch.nn as nn
 
 from engine.heuristics.heuristicInterface import HeuristicInterface
 from engine.values import PIECE_VALUES
@@ -11,10 +12,12 @@ class BasicNetwork(HeuristicInterface):
             self.model = model
         else:
             self.model = torch.nn.Sequential(
-                torch.nn.Linear(768, 64),
-                torch.nn.ReLU(),
-                torch.nn.Linear(64, 1),
-                torch.nn.Sigmoid(),
+                nn.Conv3d(1, 1, (12, 3, 3), padding=(0, 2, 2)),
+                nn.Flatten(0, -1),
+                nn.Linear(100, 12),
+                nn.ReLU(),
+                nn.Linear(12, 1),
+                nn.Sigmoid(),
             )
 
     def int_to_bit_vector(self, num):
@@ -30,7 +33,7 @@ class BasicNetwork(HeuristicInterface):
                 section = self.int_to_bit_vector(pc_int)
                 input_sections.append(section)
 
-        input_vector = torch.concatenate(input_sections)
+        input_vector = torch.concatenate(input_sections).view(1, 12, 8, 8)
         output_vector = self.model(input_vector)
         return output_vector
 
@@ -46,3 +49,7 @@ class BasicNetwork(HeuristicInterface):
 
         output_vector = self.tensor_eval(state)
         return output_vector.item()
+
+
+bnet = BasicNetwork()
+bnet.evaluate(chess.Board())
