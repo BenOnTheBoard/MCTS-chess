@@ -1,5 +1,6 @@
 import chess
 import torch
+from tqdm import tqdm
 
 from engine.heuristics.basicNetwork import BasicNetwork
 
@@ -15,7 +16,7 @@ def main():
     output_filename = "saved_model.pt"
     loss_fn = torch.nn.MSELoss()
     rounds = 20
-    learning_rate = 1e-5
+    learning_rate = 1e-4
 
     dataset = []
     for dfn in data_filenames:
@@ -27,7 +28,7 @@ def main():
 
     for round in range(rounds):
         total_loss = 0
-        for line in dataset:
+        for line in tqdm(dataset):
             fen, y = line.strip().split(",")
             l_state = chess.Board(fen=fen)
 
