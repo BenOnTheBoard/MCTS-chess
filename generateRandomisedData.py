@@ -24,7 +24,7 @@ def generate(games):
     for _ in tqdm(range(games)):
         with open(DATA_FILENAME, "a") as data_file:
             board = chess.Board()
-            while board.ply() < MAX_PLIES:
+            while not board.is_game_over() and board.ply() < MAX_PLIES:
                 rand_move = choice(list(board.legal_moves))
                 board.push(rand_move)
                 sf_analysis(board, data_file)
