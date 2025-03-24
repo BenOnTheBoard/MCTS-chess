@@ -5,6 +5,21 @@ from tqdm import tqdm
 from engine.heuristics.basicNetwork import BasicNetwork
 
 
+def process_case(BNet, line, loss_fn):
+    fen, y = line.strip().split(",")
+    l_state = chess.Board(fen=fen)
+
+    y = torch.as_tensor(
+        [[int(y)]],
+        dtype=torch.float,
+    )
+    y = torch.sigmoid(y)
+    y_pred = BNet.tensor_eval(l_state)
+
+    loss = loss_fn(y_pred, y)
+    return loss
+
+
 def main():
     BNet = BasicNetwork()
 
@@ -29,17 +44,7 @@ def main():
     for round in range(rounds):
         total_loss = 0
         for line in tqdm(dataset):
-            fen, y = line.strip().split(",")
-            l_state = chess.Board(fen=fen)
-
-            y = torch.as_tensor(
-                [int(y)],
-                dtype=torch.float,
-            )
-            y = torch.sigmoid(y)
-            y_pred = BNet.tensor_eval(l_state)
-
-            loss = loss_fn(y_pred, y)
+            loss = process_case(BNet, line, loss_fn)
             total_loss += loss
 
             BNet.model.zero_grad()
@@ -51,17 +56,7 @@ def main():
 
         test_loss = 0
         for line in testset:
-            fen, y = line.strip().split(",")
-            l_state = chess.Board(fen=fen)
-
-            y = torch.as_tensor(
-                [int(y)],
-                dtype=torch.float,
-            )
-            y = torch.sigmoid(y)
-            y_pred = BNet.tensor_eval(l_state)
-
-            loss = loss_fn(y_pred, y)
+            loss = process_case(BNet, line, loss_fn)
             test_loss += loss
 
         print(

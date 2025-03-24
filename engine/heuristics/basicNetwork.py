@@ -12,11 +12,14 @@ class BasicNetwork(HeuristicInterface):
             self.model = model
         else:
             self.model = torch.nn.Sequential(
-                nn.Conv3d(1, 1, (12, 3, 3), padding=(0, 2, 2)),
-                nn.Flatten(0, -1),
-                nn.Linear(100, 12),
-                nn.ReLU(),
-                nn.Linear(12, 1),
+                nn.Conv3d(1, 1, (14, 8, 8), padding=(2, 7, 7)),
+                nn.MaxPool2d(2, padding=1),
+                nn.Conv3d(1, 1, (3, 8, 8), padding=(0, 7, 7)),
+                nn.MaxPool2d(2, padding=1),
+                nn.Flatten(),
+                nn.Linear(64, 64),
+                nn.SiLU(),
+                nn.Linear(64, 1),
                 nn.Sigmoid(),
             )
 
