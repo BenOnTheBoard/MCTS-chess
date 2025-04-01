@@ -1,51 +1,67 @@
 import chess
 import torch
+from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
 from engine.heuristics.basicNetwork import BasicNetwork
 
 
-def process_case(BNet, line, loss_fn):
-    fen, y = line.strip().split(",")
-    l_state = chess.Board(fen=fen)
+class ChessDataset(Dataset):
+    def __init__(self, filename, conversion):
+        self.conversion = conversion
+        self.data = []
+        with open(filename, "r") as file:
+            self.data = file.readlines()
 
-    y = torch.as_tensor(
-        [[int(y)]],
-        dtype=torch.float,
-    )
-    y = torch.sigmoid(y)
-    y_pred = BNet.tensor_eval(l_state)
+    def __len__(self):
+        return len(self.data)
 
-    loss = loss_fn(y_pred, y)
+    def __getitem__(self, idx):
+        line = self.data[idx]
+        fen, y = line.strip().split(",")
+        line_state = chess.Board(fen=fen)
+        line_tsr = self.conversion(line_state)
+
+        y = torch.as_tensor(
+            [int(y)],
+            dtype=torch.float,
+        )
+        y = torch.sigmoid(y)
+
+        return line_tsr, y
+
+
+def process_batch(BNet, batch, loss_fn):
+    board_tensor, targets = batch
+
+    predictions = BNet.model(board_tensor)
+    loss = loss_fn(predictions, targets)
+
     return loss
 
 
 def main():
     BNet = BasicNetwork()
 
-    data_filenames = (
-        "training_data.txt",
-        "training_data_rand.txt",
-    )
-    tests_filename = "testing_data.txt"
+    data_filename = "LesserTDRand.txt"  # "training_data.txt"
+    tests_filename = "training_data.txt"  # "testing_data.txt"
     output_filename = "saved_model.pt"
     loss_fn = torch.nn.MSELoss()
     rounds = 20
-    learning_rate = 1e-4
+    learning_rate = 1
+    batch_size = 4000
 
-    dataset = []
-    for dfn in data_filenames:
-        with open(dfn, "r") as data_file:
-            dataset.extend(data_file.readlines())
+    dataset = ChessDataset(data_filename, BasicNetwork.board_to_tensor)
+    testset = ChessDataset(tests_filename, BasicNetwork.board_to_tensor)
 
-    with open(tests_filename, "r") as test_data_file:
-        testset = test_data_file.readlines()
+    train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False)
 
     for round in range(rounds):
         total_loss = 0
-        for line in tqdm(dataset):
-            loss = process_case(BNet, line, loss_fn)
-            total_loss += loss
+        for batch in tqdm(train_loader):
+            loss = process_batch(BNet, batch, loss_fn)
+            total_loss += loss.item()
 
             BNet.model.zero_grad()
             loss.backward()
@@ -55,12 +71,12 @@ def main():
                     param -= learning_rate * param.grad
 
         test_loss = 0
-        for line in testset:
-            loss = process_case(BNet, line, loss_fn)
-            test_loss += loss
+        for batch in test_loader:
+            loss = process_batch(BNet, batch, loss_fn)
+            test_loss += loss.item()
 
         print(
-            f"Round: {round}\tAvg. Training Loss: {total_loss / len(dataset):.4f}\t\tAvg. Test Loss: {test_loss / len(testset):.4f}"
+            f"Round: {round}\tAvg. Training Loss: {total_loss / len(train_loader):.4f}\t\tAvg. Test Loss: {test_loss / len(test_loader):.4f}"
         )
 
     torch.save(BNet.model, output_filename)
