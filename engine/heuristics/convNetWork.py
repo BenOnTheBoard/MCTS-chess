@@ -12,12 +12,12 @@ class ConvNetwork(HeuristicInterface):
             self.model = model
         else:
             self.model = torch.nn.Sequential(
-                nn.Conv3d(1, 1, (14, 8, 8), padding=(2, 7, 7)),
+                nn.Conv2d(12, 12, (8, 8), padding=(7, 7)),
                 nn.MaxPool2d(2, padding=1),
-                nn.Conv3d(1, 1, (3, 8, 8), padding=(0, 7, 7)),
+                nn.Conv2d(12, 12, (8, 8), padding=(7, 7)),
                 nn.MaxPool2d(2, padding=1),
                 nn.Flatten(),
-                nn.Linear(64, 64),
+                nn.Linear(768, 64),
                 nn.SiLU(),
                 nn.Linear(64, 1),
                 nn.Sigmoid(),
