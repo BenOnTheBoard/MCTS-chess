@@ -45,7 +45,7 @@ def main():
     BNet = ConvNetwork()
 
     data_filename = "LesserTDRand.txt"  # "training_data.txt"
-    tests_filename = "training_data.txt"  # "testing_data.txt"
+    tests_filename = "LesserTestData.txt"  # "testing_data.txt"
     output_filename = "saved_model.pt"
     loss_fn = torch.nn.MSELoss()
     rounds = 20
@@ -80,7 +80,7 @@ def main():
             f"Round: {round}\tAvg. Training Loss: {total_loss / len(train_loader):.4f}\t\tAvg. Test Loss: {test_loss / len(test_loader):.4f}"
         )
 
-    torch.save(BNet.model, output_filename)
+        torch.save(BNet.model, output_filename)
 
 
 if __name__ == "__main__":
