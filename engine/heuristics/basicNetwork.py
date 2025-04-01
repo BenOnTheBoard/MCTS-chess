@@ -18,18 +18,19 @@ class BasicNetwork(HeuristicInterface):
                 nn.Sigmoid(),
             )
 
-    def int_to_bit_vector(self, num):
+    @staticmethod
+    def int_to_bit_vector(num):
         bit_list = [int(bit) for bit in bin(num)[2:].zfill(64)]
         bit_vector = torch.tensor(bit_list, dtype=torch.float)
         return bit_vector
 
     @staticmethod
-    def board_to_tensor(self, state):
+    def board_to_tensor(state):
         input_sections = []
         for colour in chess.COLORS:
             for piece in chess.PIECE_TYPES:
                 pc_int = state.pieces_mask(piece, colour)
-                section = self.int_to_bit_vector(pc_int)
+                section = BasicNetwork.int_to_bit_vector(pc_int)
                 input_sections.append(section)
 
         return torch.concatenate(input_sections)
@@ -51,7 +52,3 @@ class BasicNetwork(HeuristicInterface):
 
         output_vector = self.tensor_eval(state)
         return output_vector.item()
-
-
-bnet = BasicNetwork()
-bnet.evaluate(chess.Board())
