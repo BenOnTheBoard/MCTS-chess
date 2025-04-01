@@ -23,7 +23,8 @@ class BasicNetwork(HeuristicInterface):
         bit_vector = torch.tensor(bit_list, dtype=torch.float)
         return bit_vector
 
-    def tensor_eval(self, state):
+    @staticmethod
+    def board_to_tensor(self, state):
         input_sections = []
         for colour in chess.COLORS:
             for piece in chess.PIECE_TYPES:
@@ -31,7 +32,10 @@ class BasicNetwork(HeuristicInterface):
                 section = self.int_to_bit_vector(pc_int)
                 input_sections.append(section)
 
-        input_vector = torch.concatenate(input_sections)
+        return torch.concatenate(input_sections)
+
+    def tensor_eval(self, state):
+        input_vector = self.board_to_tensor(state)
         output_vector = self.model(input_vector)
         return output_vector
 
