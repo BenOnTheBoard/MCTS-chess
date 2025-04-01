@@ -6,7 +6,7 @@ from engine.heuristics.heuristicInterface import HeuristicInterface
 from engine.values import PIECE_VALUES
 
 
-class BasicNetwork(HeuristicInterface):
+class ConvNetwork(HeuristicInterface):
     def __init__(self, model=None):
         if model is not None:
             self.model = model
@@ -23,20 +23,25 @@ class BasicNetwork(HeuristicInterface):
                 nn.Sigmoid(),
             )
 
-    def int_to_bit_vector(self, num):
+    @staticmethod
+    def int_to_bit_vector(num):
         bit_list = [int(bit) for bit in bin(num)[2:].zfill(64)]
         bit_vector = torch.tensor(bit_list, dtype=torch.float)
         return bit_vector
 
-    def tensor_eval(self, state):
+    @staticmethod
+    def board_to_tensor(state):
         input_sections = []
         for colour in chess.COLORS:
             for piece in chess.PIECE_TYPES:
                 pc_int = state.pieces_mask(piece, colour)
-                section = self.int_to_bit_vector(pc_int)
+                section = ConvNetwork.int_to_bit_vector(pc_int)
                 input_sections.append(section)
 
-        input_vector = torch.concatenate(input_sections).view(1, 12, 8, 8)
+        return torch.concatenate(input_sections)
+
+    def tensor_eval(self, state):
+        input_vector = self.board_to_tensor(state)
         output_vector = self.model(input_vector)
         return output_vector
 
@@ -52,7 +57,3 @@ class BasicNetwork(HeuristicInterface):
 
         output_vector = self.tensor_eval(state)
         return output_vector.item()
-
-
-bnet = BasicNetwork()
-bnet.evaluate(chess.Board())
