@@ -12,7 +12,12 @@ class BasicNetwork(HeuristicInterface):
             self.model = model
         else:
             self.model = torch.nn.Sequential(
-                nn.Linear(768, 64),
+                nn.Conv3d(1, 1, (14, 8, 8), padding=(2, 7, 7)),
+                nn.MaxPool2d(2, padding=1),
+                nn.Conv3d(1, 1, (3, 8, 8), padding=(0, 7, 7)),
+                nn.MaxPool2d(2, padding=1),
+                nn.Flatten(),
+                nn.Linear(64, 64),
                 nn.SiLU(),
                 nn.Linear(64, 1),
                 nn.Sigmoid(),
@@ -31,7 +36,7 @@ class BasicNetwork(HeuristicInterface):
                 section = self.int_to_bit_vector(pc_int)
                 input_sections.append(section)
 
-        input_vector = torch.concatenate(input_sections)
+        input_vector = torch.concatenate(input_sections).view(1, 12, 8, 8)
         output_vector = self.model(input_vector)
         return output_vector
 
