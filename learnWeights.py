@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-from engine.heuristics.basicNetwork import BasicNetwork
+from engine.heuristics.convNetwork import ConvNetwork
 
 
 class ChessDataset(Dataset):
@@ -33,6 +33,7 @@ class ChessDataset(Dataset):
 
 def process_batch(BNet, batch, loss_fn):
     board_tensor, targets = batch
+    board_tensor = board_tensor.view(len(board_tensor), 12, 8, 8)
 
     predictions = BNet.model(board_tensor)
     loss = loss_fn(predictions, targets)
@@ -41,7 +42,7 @@ def process_batch(BNet, batch, loss_fn):
 
 
 def main():
-    BNet = BasicNetwork()
+    BNet = ConvNetwork()
 
     data_filename = "LesserTDRand.txt"  # "training_data.txt"
     tests_filename = "training_data.txt"  # "testing_data.txt"
@@ -51,8 +52,8 @@ def main():
     learning_rate = 1
     batch_size = 4000
 
-    dataset = ChessDataset(data_filename, BasicNetwork.board_to_tensor)
-    testset = ChessDataset(tests_filename, BasicNetwork.board_to_tensor)
+    dataset = ChessDataset(data_filename, ConvNetwork.board_to_tensor)
+    testset = ChessDataset(tests_filename, ConvNetwork.board_to_tensor)
 
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False)
