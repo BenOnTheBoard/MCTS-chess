@@ -4,12 +4,12 @@ from random import choice
 from tqdm import tqdm
 
 RAND_START_DEPTH = 6
-SF_SEARCH_DEPTH = 24
+SF_SEARCH_DEPTH = 8
 MAX_PLIES = 100
 stockfish = chess.engine.SimpleEngine.popen_uci(
     r"stockfish\stockfish-windows-x86-64-avx2.exe"
 )
-DATA_FILENAME = "training_data_rand.txt"
+DATA_FILENAME = "LesserTDRand.txt"
 
 
 def sf_analysis(board, data_file):
@@ -31,4 +31,4 @@ def generate(games):
 
 
 if __name__ == "__main__":
-    generate(1000)
+    generate(8_000)
