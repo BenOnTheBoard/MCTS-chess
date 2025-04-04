@@ -49,7 +49,7 @@ def main():
     output_filename = "saved_model.pt"
     loss_fn = torch.nn.MSELoss()
     rounds = 20
-    learning_rate = 1
+    learning_rate = 4
     batch_size = 4000
 
     dataset = ChessDataset(data_filename, ConvNetwork.board_to_tensor)
@@ -57,6 +57,8 @@ def main():
 
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False)
+
+    best_loss = float("inf")
 
     for round in range(rounds):
         total_loss = 0
@@ -76,11 +78,15 @@ def main():
             loss = process_batch(BNet, batch, loss_fn)
             test_loss += loss.item()
 
+        if test_loss < best_loss:
+            best_loss = test_loss
+            torch.save(BNet.model, output_filename)
+        else:
+            break
+
         print(
             f"Round: {round}\tAvg. Training Loss: {total_loss / len(train_loader):.4f}\t\tAvg. Test Loss: {test_loss / len(test_loader):.4f}"
         )
-
-        torch.save(BNet.model, output_filename)
 
 
 if __name__ == "__main__":
