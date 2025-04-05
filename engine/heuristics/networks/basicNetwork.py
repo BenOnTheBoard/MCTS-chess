@@ -14,6 +14,8 @@ class BasicNetwork(HeuristicInterface):
             self.model = torch.nn.Sequential(
                 nn.Linear(768, 64),
                 nn.SiLU(),
+                nn.Linear(64, 64),
+                nn.SiLU(),
                 nn.Linear(64, 1),
                 nn.Sigmoid(),
             )

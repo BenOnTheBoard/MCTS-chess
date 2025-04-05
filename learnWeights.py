@@ -3,7 +3,8 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-from engine.heuristics.convNetwork import ConvNetwork
+from engine.heuristics.networks.basicNetwork import BasicNetwork
+from engine.heuristics.networks.convNetwork import ConvNetwork
 
 
 class ChessDataset(Dataset):
