@@ -3,8 +3,7 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-from engine.heuristics.networks.basicNetwork import BasicNetwork
-from engine.heuristics.networks.convNetwork import ConvNetwork
+from engine.heuristics.networks.deeperConvNetwork import DeeperConvNetwork
 
 
 class ChessDataset(Dataset):
@@ -32,29 +31,31 @@ class ChessDataset(Dataset):
         return line_tsr, y
 
 
-def process_batch(BNet, batch, loss_fn):
+def process_batch(network, batch, loss_fn):
     board_tensor, targets = batch
     board_tensor = board_tensor.view(len(board_tensor), 12, 8, 8)
 
-    predictions = BNet.model(board_tensor)
+    predictions = network.model(board_tensor)
     loss = loss_fn(predictions, targets)
 
     return loss
 
 
 def main():
-    BNet = ConvNetwork()
+    # model = torch.load("saved_model.pt", weights_only=False)
+    network_type = DeeperConvNetwork
+    network = network_type()
 
     data_filename = "LesserTDRand.txt"  # "training_data.txt"
     tests_filename = "LesserTestData.txt"  # "testing_data.txt"
-    output_filename = "saved_model.pt"
+    output_filename = "new_saved_model.pt"
     loss_fn = torch.nn.MSELoss()
     rounds = 20
-    learning_rate = 4
+    learning_rate = 0.001
     batch_size = 4000
 
-    dataset = ChessDataset(data_filename, ConvNetwork.board_to_tensor)
-    testset = ChessDataset(tests_filename, ConvNetwork.board_to_tensor)
+    dataset = ChessDataset(data_filename, network_type.board_to_tensor)
+    testset = ChessDataset(tests_filename, network_type.board_to_tensor)
 
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False)
@@ -64,24 +65,24 @@ def main():
     for round in range(rounds):
         total_loss = 0
         for batch in tqdm(train_loader):
-            loss = process_batch(BNet, batch, loss_fn)
+            loss = process_batch(network, batch, loss_fn)
             total_loss += loss.item()
 
-            BNet.model.zero_grad()
+            network.model.zero_grad()
             loss.backward()
 
             with torch.no_grad():
-                for param in BNet.model.parameters():
+                for param in network.model.parameters():
                     param -= learning_rate * param.grad
 
         test_loss = 0
         for batch in test_loader:
-            loss = process_batch(BNet, batch, loss_fn)
+            loss = process_batch(network, batch, loss_fn)
             test_loss += loss.item()
 
         if test_loss < best_loss:
             best_loss = test_loss
-            torch.save(BNet.model, output_filename)
+            torch.save(network.model, output_filename)
         else:
             break
 
