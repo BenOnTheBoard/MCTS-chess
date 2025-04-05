@@ -38,10 +38,10 @@ class ConvNetwork(HeuristicInterface):
                 section = ConvNetwork.int_to_bit_vector(pc_int)
                 input_sections.append(section)
 
-        return torch.concatenate(input_sections)
+        return torch.concatenate(input_sections).view(1, 12, 8, 8)
 
     def tensor_eval(self, state):
-        input_vector = self.board_to_tensor(state)
+        input_vector = ConvNetwork.board_to_tensor(state)
         output_vector = self.model(input_vector)
         return output_vector
 
