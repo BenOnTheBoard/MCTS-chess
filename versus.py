@@ -2,7 +2,7 @@ import chess
 import chess.engine
 import torch
 
-from engine.heuristics.convNetwork import ConvNetwork
+from engine.heuristics.networks.convNetwork import ConvNetwork
 from engine.mcts import MCTS
 from engine.treeEvaluators.UCT import UCT
 
@@ -21,7 +21,7 @@ stockfish = chess.engine.SimpleEngine.popen_uci(
 
 board = chess.Board()
 
-model = torch.load("conv_model.pt", weights_only=False)
+model = torch.load("models/conv_model.pt", weights_only=False)
 
 mcts = MCTS(board, 20, UCT(100), ConvNetwork(model))
 while not mcts.position.is_game_over():

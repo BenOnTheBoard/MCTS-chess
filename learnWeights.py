@@ -46,9 +46,9 @@ def main():
     network_type = DeeperConvNetwork
     network = network_type()
 
-    data_filename = "LesserTDRand.txt"  # "training_data.txt"
-    tests_filename = "LesserTestData.txt"  # "testing_data.txt"
-    output_filename = "new_saved_model.pt"
+    data_filename = "data/LesserTDRand.txt"  # "training_data.txt"
+    tests_filename = "data/LesserTestData.txt"  # "testing_data.txt"
+    output_filename = "models/new_drcnn.pt"
     loss_fn = torch.nn.MSELoss()
     rounds = 20
     learning_rate = 0.001
