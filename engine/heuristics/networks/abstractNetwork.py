@@ -1,6 +1,5 @@
 import chess
 import torch
-import torch.nn as nn
 
 from engine.heuristics.heuristicInterface import HeuristicInterface
 from engine.values import PIECE_VALUES

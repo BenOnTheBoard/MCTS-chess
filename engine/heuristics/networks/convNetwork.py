@@ -4,9 +4,6 @@ from engine.heuristics.networks.abstractNetwork import AbstractNetwork
 
 
 class ConvNetwork(AbstractNetwork):
-    def __init__(self):
-        super().__init__()
-
     def init_model(self):
         self.model = nn.Sequential(
             nn.Conv2d(12, 12, (8, 8), padding=(7, 7)),
@@ -22,5 +19,5 @@ class ConvNetwork(AbstractNetwork):
 
     @staticmethod
     def board_to_tensor(state):
-        tensor = super().board_to_tensor(state)
+        tensor = AbstractNetwork.board_to_tensor(state)
         return tensor.view(1, 12, 8, 8)

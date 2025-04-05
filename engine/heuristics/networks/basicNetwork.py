@@ -4,9 +4,6 @@ from engine.heuristics.networks.abstractNetwork import AbstractNetwork
 
 
 class BasicNetwork(AbstractNetwork):
-    def __init__(self):
-        super().__init__()
-
     def init_model(self):
         self.model = nn.Sequential(
             nn.Linear(768, 64),
