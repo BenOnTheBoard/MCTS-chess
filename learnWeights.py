@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-from engine.heuristics.networks.deeperConvNetwork import DeeperConvNetwork
+from engine.heuristics.networks.lighterConvNetwork import LighterConvNetwork
 
 
 class ChessDataset(Dataset):
@@ -43,15 +43,15 @@ def process_batch(network, batch, loss_fn):
 
 def main():
     # model = torch.load("saved_model.pt", weights_only=False)
-    network_type = DeeperConvNetwork
+    network_type = LighterConvNetwork
     network = network_type()
 
-    data_filename = "data/LesserTDRand.txt"  # "training_data.txt"
-    tests_filename = "data/LesserTestData.txt"  # "testing_data.txt"
-    output_filename = "models/new_drcnn.pt"
+    data_filename = "data/LesserTDRand.txt"
+    tests_filename = "data/LesserTestData.txt"
+    output_filename = "models/new_lrcnn.pt"
     loss_fn = torch.nn.MSELoss()
-    rounds = 20
-    learning_rate = 0.001
+    rounds = 200
+    learning_rate = 1
     batch_size = 4000
 
     dataset = ChessDataset(data_filename, network_type.board_to_tensor)
