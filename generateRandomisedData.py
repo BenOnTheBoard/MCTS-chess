@@ -9,7 +9,7 @@ MAX_PLIES = 100
 stockfish = chess.engine.SimpleEngine.popen_uci(
     r"stockfish\stockfish-windows-x86-64-avx2.exe"
 )
-DATA_FILENAME = "LesserTDRand.txt"
+DATA_FILENAME = "data/LesserTDRand.txt"
 
 
 def sf_analysis(board, data_file):
