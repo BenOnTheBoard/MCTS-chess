@@ -42,16 +42,16 @@ def process_batch(network, batch, loss_fn):
 
 
 def main():
-    model = torch.load("models/lrcnn.pt", weights_only=False)
+    model = None  # torch.load("models/conv_model.pt", weights_only=False)
     network_type = DeeperConvNetwork
     network = network_type(model=model)
 
     data_filename = "data/LesserTDRand.txt"
     tests_filename = "data/LesserTestData.txt"
-    output_filename = "models/new_lrcnn.pt"
+    output_filename = "models/new_dcnn.pt"
     loss_fn = torch.nn.MSELoss()
     rounds = 200
-    learning_rate = 0.05
+    learning_rate = 5
     batch_size = 4000
 
     dataset = ChessDataset(data_filename, network_type.board_to_tensor)
