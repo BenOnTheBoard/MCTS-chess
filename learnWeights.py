@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-from engine.heuristics.networks.deeperConvNetwork import DeeperConvNetwork
+from engine.heuristics.networks.convNetwork import ConvNetwork
 
 
 class ChessDataset(Dataset):
@@ -41,17 +41,21 @@ def process_batch(network, batch, loss_fn):
     return loss
 
 
+def learning_rate_function(start, n):
+    return start / (n + 1)
+
+
 def main():
-    model = None  # torch.load("models/conv_model.pt", weights_only=False)
-    network_type = DeeperConvNetwork
+    model = None  # torch.load("models/dcnn.pt", weights_only=False)
+    network_type = ConvNetwork
     network = network_type(model=model)
 
     data_filename = "data/LesserTDRand.txt"
     tests_filename = "data/LesserTestData.txt"
-    output_filename = "models/new_dcnn.pt"
+    output_filename = "models/fcnn.pt"
     loss_fn = torch.nn.MSELoss()
     rounds = 200
-    learning_rate = 5
+    init_learning_rate = 10
     batch_size = 4000
 
     dataset = ChessDataset(data_filename, network_type.board_to_tensor)
@@ -60,9 +64,8 @@ def main():
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False)
 
-    best_loss = float("inf")
-
     for round in range(rounds):
+        learning_rate = learning_rate_function(init_learning_rate, round)
         total_loss = 0
         for batch in tqdm(train_loader):
             loss = process_batch(network, batch, loss_fn)
@@ -75,20 +78,21 @@ def main():
                 for param in network.model.parameters():
                     param -= learning_rate * param.grad
 
-        test_loss = 0
-        for batch in test_loader:
-            loss = process_batch(network, batch, loss_fn)
-            test_loss += loss.item()
+        print(f"""
+                Round: {round}
+                Learning Rate:{learning_rate}
+                Loss:{loss}
+                Avg. Training Loss: {total_loss / len(train_loader):.4f}
+        """)
 
-        if test_loss < best_loss:
-            best_loss = test_loss
-            torch.save(network.model, output_filename)
-        else:
-            break
+    test_loss = 0
+    for batch in test_loader:
+        loss = process_batch(network, batch, loss_fn)
+        test_loss += loss.item()
 
-        print(
-            f"Round: {round}\tAvg. Training Loss: {total_loss / len(train_loader):.4f}\t\tAvg. Test Loss: {test_loss / len(test_loader):.4f}"
-        )
+    print(f"Final model test Loss: {test_loss / len(test_loader):.4f}")
+
+    torch.save(model, output_filename)
 
 
 if __name__ == "__main__":
