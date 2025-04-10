@@ -81,7 +81,6 @@ def main():
         print(f"""
                 Round: {round}
                 Learning Rate:{learning_rate}
-                Loss:{loss}
                 Avg. Training Loss: {total_loss / len(train_loader):.4f}
         """)
 
