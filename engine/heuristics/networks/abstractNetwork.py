@@ -2,7 +2,7 @@ import chess
 import torch
 
 from engine.heuristics.heuristicInterface import HeuristicInterface
-from engine.values import PIECE_VALUES
+from engine.values import OUTCOMES
 
 
 class AbstractNetwork(HeuristicInterface):
@@ -40,12 +40,7 @@ class AbstractNetwork(HeuristicInterface):
     def evaluate(self, state):
         if state.is_game_over():
             winner = state.outcome().winner
-            if winner == chess.WHITE:
-                return PIECE_VALUES[chess.KING]
-            elif winner == chess.BLACK:
-                return -PIECE_VALUES[chess.KING]
-            else:
-                return 0
+            return OUTCOMES[winner]
 
         output_vector = self.tensor_eval(state)
         return output_vector.item()
