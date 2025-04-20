@@ -12,26 +12,24 @@ class ChessDataset(Dataset):
         self.conversion = conversion
         self.data = []
         with open(filename, "r") as file:
-            print("Reading in data...")
-            for line in tqdm(file.readlines()):
-                fen, y = line.strip().split(",")
-                line_state = chess.Board(fen=fen)
-                line_tsr = self.conversion(line_state)
-
-                y = torch.as_tensor(
-                    [int(y)],
-                    dtype=torch.float,
-                )
-                y = torch.sigmoid(y)
-
-                self.data.append((line_tsr, y))
-            print("Data done.\n")
+            self.data = file.readlines()
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
-        return self.data[idx]
+        line = self.data[idx]
+        fen, y = line.strip().split(",")
+        line_state = chess.Board(fen=fen)
+        line_tsr = self.conversion(line_state)
+
+        y = torch.as_tensor(
+            [int(y)],
+            dtype=torch.float,
+        )
+        y = torch.sigmoid(y)
+
+        return line_tsr, y
 
 
 def process_batch(network, batch, loss_fn):
@@ -64,7 +62,7 @@ def main():
     loss_fn = torch.nn.MSELoss()
     rounds = 20
     init_learning_rate = 0.2
-    batch_size = 8192
+    batch_size = 4096
 
     dataset = ChessDataset(data_filename, network_type.board_to_tensor)
     testset = ChessDataset(tests_filename, network_type.board_to_tensor)
