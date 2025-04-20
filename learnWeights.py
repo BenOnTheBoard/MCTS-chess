@@ -1,9 +1,10 @@
 import chess
+from math import exp
 import torch
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-from engine.heuristics.networks.minNetwork import MinNetwork
+from engine.heuristics.networks.convNetwork import ConvNetwork
 
 
 class ChessDataset(Dataset):
@@ -11,29 +12,31 @@ class ChessDataset(Dataset):
         self.conversion = conversion
         self.data = []
         with open(filename, "r") as file:
-            self.data = file.readlines()
+            print("Reading in data...")
+            for line in tqdm(file.readlines()):
+                fen, y = line.strip().split(",")
+                line_state = chess.Board(fen=fen)
+                line_tsr = self.conversion(line_state)
+
+                y = torch.as_tensor(
+                    [int(y)],
+                    dtype=torch.float,
+                )
+                y = torch.sigmoid(y)
+
+                self.data.append((line_tsr, y))
+            print("Data done.\n")
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
-        line = self.data[idx]
-        fen, y = line.strip().split(",")
-        line_state = chess.Board(fen=fen)
-        line_tsr = self.conversion(line_state)
-
-        y = torch.as_tensor(
-            [int(y)],
-            dtype=torch.float,
-        )
-        y = torch.sigmoid(y)
-
-        return line_tsr, y
+        return self.data[idx]
 
 
 def process_batch(network, batch, loss_fn):
     board_tensor, targets = batch
-    # board_tensor = board_tensor.view(len(board_tensor), 12, 8, 8)
+    board_tensor = board_tensor.view(len(board_tensor), 12, 8, 8)
 
     predictions = network.model(board_tensor)
     loss = loss_fn(predictions, targets)
@@ -41,22 +44,27 @@ def process_batch(network, batch, loss_fn):
     return loss
 
 
+def int_sigmoid(x):
+    return 1 / (1 + exp(-x))
+
+
 def learning_rate_function(start, n):
-    return start / (n + 1)
+    a = 10
+    return start / ((n / a) + 1)
 
 
 def main():
-    model = None  # torch.load("models/dcnn.pt", weights_only=False)
-    network_type = MinNetwork
+    model = torch.load("models/conv_model.pt", weights_only=False)
+    network_type = ConvNetwork
     network = network_type(model=model)
 
     data_filename = "data/LesserTDRand.txt"
     tests_filename = "data/LesserTestData.txt"
-    output_filename = "models/fcnn.pt"
+    output_filename = "models/new_conv_model.pt"
     loss_fn = torch.nn.MSELoss()
-    rounds = 200
-    init_learning_rate = 1e-4
-    batch_size = 4000
+    rounds = 20
+    init_learning_rate = 0.2
+    batch_size = 8192
 
     dataset = ChessDataset(data_filename, network_type.board_to_tensor)
     testset = ChessDataset(tests_filename, network_type.board_to_tensor)
@@ -80,8 +88,8 @@ def main():
 
         print(f"""
                 Round: {round}
-                Learning Rate:{learning_rate}
-                Avg. Training Loss: {total_loss / len(train_loader):.4f}
+                Learning Rate:{learning_rate:.6f}
+                Avg. Training Loss: {total_loss / len(train_loader):.6f}
         """)
 
     test_loss = 0
@@ -89,7 +97,7 @@ def main():
         loss = process_batch(network, batch, loss_fn)
         test_loss += loss.item()
 
-    print(f"Final model test Loss: {test_loss / len(test_loader):.4f}")
+    print(f"Final model test loss: {test_loss / len(test_loader):.4f}")
 
     torch.save(model, output_filename)
 
