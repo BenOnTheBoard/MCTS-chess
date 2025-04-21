@@ -1,5 +1,6 @@
 import chess
-from math import exp
+from math import cos, exp
+from math import pi as PI
 import torch
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
@@ -46,9 +47,8 @@ def int_sigmoid(x):
     return 1 / (1 + exp(-x))
 
 
-def learning_rate_function(start, n):
-    a = 10
-    return start / ((n / a) + 1)
+def learning_rate_function(start, epoch, total_epochs):
+    return start * (1 + cos(PI * epoch / total_epochs)) / 2
 
 
 def main():
@@ -60,8 +60,8 @@ def main():
     tests_filename = "data/LesserTestData.txt"
     output_filename = "models/new_V2_cnn.pt"
     loss_fn = torch.nn.MSELoss()
-    rounds = 20
-    init_learning_rate = 1
+    total_epochs = 20
+    init_learning_rate = 1e-3
     batch_size = 4096
 
     dataset = ChessDataset(data_filename, network_type.board_to_tensor)
@@ -70,8 +70,8 @@ def main():
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False)
 
-    for round in range(rounds):
-        learning_rate = learning_rate_function(init_learning_rate, round)
+    for epoch in range(total_epochs):
+        learning_rate = learning_rate_function(init_learning_rate, epoch, total_epochs)
         total_loss = 0
         for batch in tqdm(train_loader):
             loss = process_batch(network, batch, loss_fn)
@@ -85,19 +85,20 @@ def main():
                     param -= learning_rate * param.grad
 
         print(f"""
-                Round: {round}
+                Epoch: {epoch}
                 Learning Rate:{learning_rate:.6f}
                 Avg. Training Loss: {total_loss / len(train_loader):.6f}
         """)
 
-    test_loss = 0
-    for batch in test_loader:
-        loss = process_batch(network, batch, loss_fn)
-        test_loss += loss.item()
+        test_loss = 0
+        for batch in test_loader:
+            loss = process_batch(network, batch, loss_fn)
+            test_loss += loss.item()
 
-    print(f"Final model test loss: {test_loss / len(test_loader):.4f}")
+        print(f"Model test loss: {test_loss / len(test_loader):.4f}")
 
-    torch.save(model, output_filename)
+    print("\n\nTraining is done!")
+    torch.save(network.model, output_filename)
 
 
 if __name__ == "__main__":
