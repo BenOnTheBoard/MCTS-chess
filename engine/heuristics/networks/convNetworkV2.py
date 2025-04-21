@@ -8,7 +8,7 @@ class ConvNetworkV2(AbstractNetwork):
         self.model = nn.Sequential(
             nn.Conv2d(12, 32, (3, 3), padding=1),
             nn.BatchNorm2d(32),
-            nn.SiLU(),
+            nn.ReLU(),
             nn.MaxPool2d(2),
             nn.Conv2d(32, 64, (3, 3), padding=1),
             nn.BatchNorm2d(64),

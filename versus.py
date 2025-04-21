@@ -2,7 +2,7 @@ import chess
 import chess.engine
 import torch
 
-from engine.heuristics.networks.convNetwork import ConvNetwork
+from engine.heuristics.networks.convNetworkV2 import ConvNetworkV2
 from engine.mcts import MCTS
 from engine.treeEvaluators.UCT import UCT
 
@@ -21,9 +21,9 @@ stockfish = chess.engine.SimpleEngine.popen_uci(
 
 board = chess.Board()
 
-model = torch.load("models/conv_model.pt", weights_only=False)
+model = torch.load("models/V2_cnn.pt", weights_only=False)
 
-mcts = MCTS(board, 20, UCT(100), ConvNetwork(model))
+mcts = MCTS(board, 20, UCT(2), ConvNetworkV2(model))
 while not mcts.position.is_game_over():
     white_choice = mcts.get_move()
     print(mcts.root_node.visits)
