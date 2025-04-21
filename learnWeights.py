@@ -27,7 +27,7 @@ class ChessDataset(Dataset):
             [int(y)],
             dtype=torch.float,
         )
-        y = torch.sigmoid(y)
+        y = torch.sigmoid(y / 100)
 
         return line_tsr, y
 
@@ -61,7 +61,7 @@ def main():
     output_filename = "models/new_conv_model.pt"
     loss_fn = torch.nn.MSELoss()
     rounds = 20
-    init_learning_rate = 0.2
+    init_learning_rate = 1
     batch_size = 4096
 
     dataset = ChessDataset(data_filename, network_type.board_to_tensor)
