@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-from engine.heuristics.networks.convNetwork import ConvNetwork
+from engine.heuristics.networks.convNetworkV2 import ConvNetworkV2
 
 
 class ChessDataset(Dataset):
@@ -52,13 +52,13 @@ def learning_rate_function(start, n):
 
 
 def main():
-    model = torch.load("models/conv_model.pt", weights_only=False)
-    network_type = ConvNetwork
+    model = None  # torch.load("models/conv_model.pt", weights_only=False)
+    network_type = ConvNetworkV2
     network = network_type(model=model)
 
     data_filename = "data/LesserTDRand.txt"
     tests_filename = "data/LesserTestData.txt"
-    output_filename = "models/new_conv_model.pt"
+    output_filename = "models/new_V2_cnn.pt"
     loss_fn = torch.nn.MSELoss()
     rounds = 20
     init_learning_rate = 1

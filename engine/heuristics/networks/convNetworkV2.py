@@ -3,18 +3,25 @@ import torch.nn as nn
 from engine.heuristics.networks.abstractNetwork import AbstractNetwork
 
 
-class DeeperConvNetwork(AbstractNetwork):
+class ConvNetworkV2(AbstractNetwork):
     def init_model(self):
         self.model = nn.Sequential(
-            nn.Conv2d(12, 64, kernel_size=3, padding=1),
+            nn.Conv2d(12, 32, (3, 3), padding=1),
+            nn.BatchNorm2d(32),
+            nn.SiLU(),
+            nn.MaxPool2d(2),
+            nn.Conv2d(32, 64, (3, 3), padding=1),
+            nn.BatchNorm2d(64),
             nn.ReLU(),
-            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.MaxPool2d(2),
+            nn.Conv2d(64, 128, (3, 3), padding=1),
+            nn.BatchNorm2d(128),
             nn.ReLU(),
             nn.MaxPool2d(2),
             nn.Flatten(),
-            nn.Linear(2048, 128),
+            nn.Linear(128, 256),
             nn.ReLU(),
-            nn.Linear(128, 1),
+            nn.Linear(256, 1),
             nn.Sigmoid(),
         )
 
