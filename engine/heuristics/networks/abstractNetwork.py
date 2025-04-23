@@ -18,7 +18,7 @@ class AbstractNetwork(HeuristicInterface):
     @staticmethod
     def int_to_bit_vector(num):
         bit_list = [int(bit) for bit in bin(num)[2:].zfill(64)]
-        bit_vector = torch.tensor(bit_list, dtype=torch.float)
+        bit_vector = torch.tensor(bit_list, dtype=torch.bool)
         return bit_vector
 
     @staticmethod
