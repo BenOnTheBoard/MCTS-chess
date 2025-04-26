@@ -54,16 +54,16 @@ def learning_rate_function(start, ep, total_ep):
 
 
 def main():
-    model = None  # torch.load("models/conv_model.pt", weights_only=False)
+    model = None
     network_type = ConvNetwork
     network = network_type(model=model)
 
     data_filename = "data/LesserTDRand.txt"
     tests_filename = "data/LesserTestData.txt"
-    output_filename = "models/new_V2_cnn.pt"
+    output_filename = "models/new_cnn.pt"
     loss_fn = torch.nn.MSELoss()
     total_epochs = 100
-    init_learning_rate = 1e-4
+    init_learning_rate = 1e-1
     batch_size = 8192
 
     dataset = ChessDataset(data_filename, network_type.board_to_tensor)
