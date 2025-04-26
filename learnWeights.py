@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-from engine.heuristics.networks.convNetworkV2 import ConvNetworkV2
+from engine.heuristics.networks.convNetwork import ConvNetwork
 
 
 class ChessDataset(Dataset):
@@ -37,7 +37,7 @@ class ChessDataset(Dataset):
 def process_batch(network, batch, loss_fn):
     board_tensor, targets = batch
     board_tensor = board_tensor.to(torch.float32)
-    board_tensor = board_tensor.view(len(board_tensor), 12, 8, 8)
+    board_tensor = board_tensor.view(len(board_tensor), 6, 8, 8)
 
     predictions = network.model(board_tensor)
     loss = loss_fn(predictions, targets)
@@ -55,7 +55,7 @@ def learning_rate_function(start, ep, total_ep):
 
 def main():
     model = None  # torch.load("models/conv_model.pt", weights_only=False)
-    network_type = ConvNetworkV2
+    network_type = ConvNetwork
     network = network_type(model=model)
 
     data_filename = "data/LesserTDRand.txt"
@@ -63,7 +63,7 @@ def main():
     output_filename = "models/new_V2_cnn.pt"
     loss_fn = torch.nn.MSELoss()
     total_epochs = 100
-    init_learning_rate = 1e-2
+    init_learning_rate = 1e-4
     batch_size = 8192
 
     dataset = ChessDataset(data_filename, network_type.board_to_tensor)
