@@ -33,7 +33,7 @@ class AbstractNetwork(HeuristicInterface):
         return torch.concatenate(input_sections)
 
     def tensor_eval(self, state):
-        input_vector = self.board_to_tensor(state)
+        input_vector = self.board_to_tensor(state).to(torch.float32)
         output_vector = self.model(input_vector)
         return output_vector
 
