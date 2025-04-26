@@ -6,14 +6,22 @@ from engine.heuristics.networks.abstractNetwork import AbstractNetwork
 class ConvNetwork(AbstractNetwork):
     def init_model(self):
         self.model = nn.Sequential(
-            nn.Conv2d(12, 12, (8, 8), padding=(7, 7)),
-            nn.MaxPool2d(2, padding=1),
-            nn.Conv2d(12, 12, (8, 8), padding=(7, 7)),
-            nn.MaxPool2d(2, padding=1),
+            nn.Conv2d(12, 32, (3, 3), padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Conv2d(32, 64, (3, 3), padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Conv2d(64, 128, (3, 3), padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
             nn.Flatten(),
-            nn.Linear(768, 64),
-            nn.SiLU(),
-            nn.Linear(64, 1),
+            nn.Linear(128, 256),
+            nn.ReLU(),
+            nn.Linear(256, 1),
             nn.Sigmoid(),
         )
 
