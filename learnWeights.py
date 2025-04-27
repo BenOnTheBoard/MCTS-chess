@@ -64,7 +64,7 @@ def main():
     loss_fn = torch.nn.MSELoss()
     total_epochs = 100
     init_learning_rate = 1e-1
-    batch_size = 8192
+    batch_size = 4096
 
     dataset = ChessDataset(data_filename, network_type.board_to_tensor)
     testset = ChessDataset(tests_filename, network_type.board_to_tensor)
@@ -73,6 +73,7 @@ def main():
     test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False)
 
     for epoch in range(total_epochs):
+        network.model.train()
         learning_rate = learning_rate_function(init_learning_rate, epoch, total_epochs)
         total_loss = 0
         for batch in tqdm(train_loader):
@@ -92,15 +93,16 @@ def main():
                 Avg. Training Loss: {total_loss / len(train_loader):.6f}
         """)
 
+        network.model.eval()
         test_loss = 0
         for batch in test_loader:
             loss = process_batch(network, batch, loss_fn)
             test_loss += loss.item()
 
         print(f"\t\t Model test loss: {test_loss / len(test_loader):.4f}\n")
+        torch.save(network.model, output_filename)
 
     print("\n\nTraining is done!")
-    torch.save(network.model, output_filename)
 
 
 if __name__ == "__main__":
