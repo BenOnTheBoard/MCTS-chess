@@ -40,3 +40,6 @@ class Node:
 
     def get_move(self, parent):
         return self.parent_move_dict[parent]
+
+    def get_parents(self):
+        return self.parent_move_dict.keys()
