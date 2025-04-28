@@ -6,7 +6,11 @@ class Node:
     hash_table = dict()
 
     def __init__(self, move, parent):
-        self.parent_move_dict = {parent: move}
+        if move is None:
+            self.parent_move_dict = None
+        else:
+            self.parent_move_dict = {parent: move}
+
         self.children = None
         self.score = 0
         self.visits = 0
@@ -27,6 +31,7 @@ class Node:
                     Node.hash_table[new_zh] = new_child
 
                 self.children.append(new_child)
+                new_state.pop()
 
     def update(self, result):
         self.visits += 1
@@ -42,4 +47,6 @@ class Node:
         return self.parent_move_dict[parent]
 
     def get_parents(self):
+        if self.parent_move_dict is None:
+            return []
         return self.parent_move_dict.keys()
