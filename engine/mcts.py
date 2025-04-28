@@ -20,8 +20,8 @@ class MCTS:
     def add_move(self, move):
         found_child = False
         for child in self.root_node.children:
-            if child.move == move:
-                child.parent = None
+            if child.get_move(self.root_node) == move:
+                child.parent_move_dict = None
                 self.root_node = child
                 found_child = True
                 break
@@ -57,22 +57,30 @@ class MCTS:
 
         return best_node
 
+    def update_tree(self, node, result):
+        seen_nodes = {node}
+        next_nodes = {node}
+        while next_nodes:
+            cur_node = next_nodes.pop()
+            cur_node.update(result)
+            for parent in cur_node.get_parents():
+                seen_nodes.add(parent)
+                next_nodes.add(parent)
+
     def get_move(self):
         start = perf_counter()
         while (perf_counter() - start) < self.time_out:
             node, state = self.root_node, deepcopy(self.position)
 
             while not node.is_leaf():
-                node = self.tree_policy(node, state.turn)
-                state.push(node.move)
+                next_node = self.tree_policy(node, state.turn)
+                state.push(next_node.get_move(node))
+                node = next_node
 
             node.expand_node(state)
 
             result = self.rollout_heuristic.evaluate(state)
 
-            while node.has_parent():
-                node.update(result)
-                node = node.parent
-            self.root_node.update(result)
+            self.update_tree(node, result)
 
         return get_best_move(self.root_node, self.position.turn)
