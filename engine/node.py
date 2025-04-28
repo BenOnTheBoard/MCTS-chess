@@ -16,22 +16,23 @@ class Node:
         self.visits = 0
 
     def expand_node(self, state):
-        if self.children is None and not state.is_game_over():
-            self.children = []
-            new_state = copy(state)
-            for move in state.legal_moves:
-                new_state.push(move)
-                new_zh = zobrist_hash(new_state)
+        if self.children is not None or state.is_game_over():
+            return
 
-                if new_zh in Node.hash_table:
-                    new_child = Node.hash_table[new_zh]
-                    new_child.parent_move_dict[self] = move
-                else:
-                    new_child = Node(move, self)
-                    Node.hash_table[new_zh] = new_child
+        self.children = []
+        for move in state.legal_moves:
+            state.push(move)
+            zh = zobrist_hash(state)
 
-                self.children.append(new_child)
-                new_state.pop()
+            if zh in Node.hash_table:
+                child = Node.hash_table[zh]
+                child.parent_move_dict[self] = move
+            else:
+                child = Node(move, self)
+                Node.hash_table[zh] = child
+
+            self.children.append(child)
+            state.pop()
 
     def update(self, result):
         self.visits += 1
