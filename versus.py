@@ -19,11 +19,12 @@ stockfish = chess.engine.SimpleEngine.popen_uci(
     r"stockfish\stockfish-windows-x86-64-avx2.exe"
 )
 
-board = chess.Board(fen="8/8/6p1/6P1/k1p1pP2/2P1P3/K1b5/8 w - - 8 45")
+board = chess.Board()
 
-model = torch.load("models/conv_model.pt", weights_only=False)
+model = torch.load("models/cnn.pt", weights_only=False)
+model.eval()
 
-mcts = MCTS(board, 300, UCT(1.5), ConvNetwork(model))
+mcts = MCTS(board, 60, UCT(1.5), ConvNetwork(model))
 while not mcts.position.is_game_over():
     white_choice = mcts.get_move()
     print(mcts.root_node.visits)
