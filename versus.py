@@ -24,13 +24,14 @@ board = chess.Board()
 model = torch.load("models/cnn.pt", weights_only=False)
 model.eval()
 
-mcts = MCTS(board, 60, UCT(1.5), ConvNetwork(model))
+mcts = MCTS(board, 1, UCT(1.5), ConvNetwork(model))
 while not mcts.position.is_game_over():
     white_choice = mcts.get_move()
     print(mcts.root_node.visits)
     print("Move analysis:")
     for child in mcts.root_node.children:
-        print(f"{child.move.uci()}\t{child.visits}\t{(child.score / child.visits):.2f}")
+        print(f"{child.get_move(mcts.root_node).uci()}")
+        print(f"\t{child.visits}\t{(child.score / child.visits):.2f}")
     mcts.add_move(white_choice)
 
     print()
