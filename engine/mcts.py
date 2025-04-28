@@ -64,8 +64,9 @@ class MCTS:
             cur_node = next_nodes.pop()
             cur_node.update(result)
             for parent in cur_node.get_parents():
-                seen_nodes.add(parent)
-                next_nodes.add(parent)
+                if parent not in seen_nodes:
+                    seen_nodes.add(parent)
+                    next_nodes.add(parent)
 
     def get_move(self):
         start = perf_counter()
