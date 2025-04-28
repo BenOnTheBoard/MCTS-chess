@@ -21,7 +21,7 @@ class MCTS:
         found_child = False
         for child in self.root_node.children:
             if child.get_move(self.root_node) == move:
-                child.parent_move_dict = None
+                child.parent_move_dict = {}
                 self.root_node = child
                 found_child = True
                 break

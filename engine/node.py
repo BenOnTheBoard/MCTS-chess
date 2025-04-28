@@ -7,7 +7,7 @@ class Node:
 
     def __init__(self, move, parent):
         if move is None:
-            self.parent_move_dict = None
+            self.parent_move_dict = {}
         else:
             self.parent_move_dict = {parent: move}
 
@@ -41,12 +41,10 @@ class Node:
         return self.children is None
 
     def has_parent(self):
-        return self.parent_move_dict is not None
+        return len(self.parent_move_dict) != 0
 
     def get_move(self, parent):
         return self.parent_move_dict[parent]
 
     def get_parents(self):
-        if self.parent_move_dict is None:
-            return []
         return self.parent_move_dict.keys()
