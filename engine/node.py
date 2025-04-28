@@ -2,22 +2,20 @@ class Node:
     def __init__(self, move, parent):
         self.move = move
         self.parent = parent
-        self.children = []
+        self.children = None
         self.score = 0
         self.visits = 0
 
     def expand_node(self, state):
-        if not state.is_game_over():
-            for move in state.legal_moves:
-                new_child = Node(move, self)
-                self.children.append(new_child)
+        if self.children is None and not state.is_game_over():
+            self.children = [Node(move, self) for move in state.legal_moves]
 
     def update(self, result):
         self.visits += 1
         self.score += result
 
     def is_leaf(self):
-        return len(self.children) == 0
+        return self.children is None
 
     def has_parent(self):
         return self.parent is not None

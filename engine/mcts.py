@@ -7,12 +7,11 @@ from engine.utils import get_best_move
 
 class MCTS:
     def __init__(self, position, time_out, tree_evaluator, rollout_heuristic):
-        self.root_node = Node(None, None)
         self.time_out = time_out  # sec
-        self.position = position.copy()
-
         self.tree_evaluator = tree_evaluator
         self.rollout_heuristic = rollout_heuristic
+
+        self.set_position(position)
 
     def set_position(self, new_position):
         self.root_node = Node(None, None)
