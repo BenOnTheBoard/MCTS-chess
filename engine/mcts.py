@@ -67,6 +67,7 @@ class MCTS:
                 state.push(node.move)
 
             node.expand_node(state)
+            node = self.tree_policy(node, state.turn)
 
             result = self.rollout_heuristic.evaluate(state)
 
