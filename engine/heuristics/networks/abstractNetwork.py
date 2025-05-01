@@ -43,8 +43,9 @@ class AbstractNetwork(HeuristicInterface):
         return output_vector
 
     def evaluate(self, state):
-        if state.is_game_over():
-            winner = state.outcome().winner
+        outcome = state.outcome(claim_draw=True)
+        if outcome is not None:
+            winner = outcome.winner
             return OUTCOMES[winner]
 
         output_vector = self.tensor_eval(state)

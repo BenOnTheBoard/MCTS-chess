@@ -10,7 +10,7 @@ class PerMoveHeuristic(HeuristicInterface):
 
     def evaluate(self, state):
         state_piece_count = len(state.piece_map())
-        while not state.is_game_over():
+        while state.outcome(claim_draw=True) is None:
             p_map = state.piece_map()
             if len(p_map) <= 6 and state_piece_count > 8:
                 return material_balance(p_map)
