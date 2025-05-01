@@ -19,6 +19,7 @@ def process_batch(model, batch, loss_fn):
 
 
 def train_epoch(model, batch, loss_fn, l_rate):
+    model.train()
     loss = process_batch(model, batch, loss_fn)
 
     model.zero_grad()
@@ -27,6 +28,7 @@ def train_epoch(model, batch, loss_fn, l_rate):
     with torch.no_grad():
         for param in model.parameters():
             param -= l_rate * param.grad
+    model.eval()
 
 
 def make_batch(mcts, network):
@@ -61,27 +63,30 @@ def print_analysis(node, intuition):
 
 if __name__ == "__main__":
     loss_fn = torch.nn.MSELoss()
-    output_filename = "models/sc_cnn.pt"
-    l_rate = 1e-5
+    output_filename = "models/sc_only_cnn.pt"
+    l_rate = 1e-1
+    games = 12
 
     board = chess.Board()
 
-    model = torch.load("models/cnn.pt", weights_only=False)
-    model.eval()
+    model = None  # torch.load("models/cnn.pt", weights_only=False)
     network = ConvNetwork(model)
-    mcts = MCTS(board, 300, UCT(1000), network)
+    mcts = MCTS(board, 5, UCT(10000), network)
 
-    while not mcts.position.is_game_over():
-        choice = mcts.get_move()
+    for _ in range(games):
+        while mcts.position.outcome(claim_draw=True) is None:
+            choice = mcts.get_move()
 
-        batch = make_batch(mcts, network)
-        train_epoch(model, batch, loss_fn, l_rate)
+            batch = make_batch(mcts, network)
 
-        print_analysis(mcts.root_node, model(batch[0]))
+            print_analysis(mcts.root_node, network.model(batch[0]))
+            train_epoch(network.model, batch, loss_fn, l_rate)
 
-        mcts.add_move(choice)
+            mcts.add_move(choice)
+            # now wipe memory of analysis
+            mcts.set_position(mcts.position)
 
-        print()
-        print(mcts.position)
+            print()
+            print(mcts.position)
 
-        torch.save(network.model, output_filename)
+            torch.save(network.model, output_filename)
