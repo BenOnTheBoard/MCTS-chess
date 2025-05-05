@@ -18,6 +18,7 @@ class ChessDataset(Dataset):
             fen, y = line.strip().split(",")
             line_state = chess.Board(fen=fen)
             line_tsr = self.conversion(line_state)
+            mirror_line_tsr = self.conversion(line_state.mirror())
 
             y = torch.as_tensor(
                 [int(y)],
@@ -26,6 +27,7 @@ class ChessDataset(Dataset):
             y = torch.sigmoid(y)
 
             self.data.append((line_tsr, y))
+            self.data.append((mirror_line_tsr, 1-y))
 
     def __len__(self):
         return len(self.data)
