@@ -16,26 +16,20 @@ class AbstractNetwork(HeuristicInterface):
         raise NotImplementedError("Model forms must be supplied by subclass.")
 
     @staticmethod
-    def int_to_bit_vector(num):
-        bit_list = [int(bit) for bit in bin(num)[2:].zfill(64)]
-        bit_vector = torch.tensor(bit_list, dtype=torch.int8)
-        return bit_vector
-
-    @staticmethod
     def board_to_tensor(state):
-        input_sections = []
-        for piece in chess.PIECE_TYPES:
-            white_int = state.pieces_mask(piece, chess.WHITE)
-            white_section = AbstractNetwork.int_to_bit_vector(white_int)
+        board_tensor = torch.zeros((6, 64))
+        for square in chess.SQUARES:
+            piece = state.piece_at(square)
+            if piece is None:
+                continue
 
-            black_int = state.pieces_mask(piece, chess.BLACK)
-            black_section = AbstractNetwork.int_to_bit_vector(black_int)
+            layer = piece.piece_type - 1
+            if piece.color is chess.WHITE:
+                board_tensor[layer, square] = 1
+            else:
+                board_tensor[layer, square] = -1
 
-            piece_section = white_section - black_section
-
-            input_sections.append(piece_section)
-
-        return torch.concatenate(input_sections)
+        return board_tensor
 
     def tensor_eval(self, state):
         input_vector = self.board_to_tensor(state).to(torch.float32)
@@ -53,4 +47,16 @@ class AbstractNetwork(HeuristicInterface):
 
 
 if __name__ == "__main__":
-    AbstractNetwork.board_to_tensor(chess.Board())
+    from time import perf_counter_ns as ns
+    from tqdm import tqdm
+    from statistics import median
+
+    times = []
+    for _ in tqdm(range(100_000)):
+        start = ns()
+        AbstractNetwork.board_to_tensor(chess.Board())
+        end = ns()
+
+        times.append(end - start)
+
+    print(f"{median(times) / 1000}μs")
