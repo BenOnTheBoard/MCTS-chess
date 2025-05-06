@@ -17,7 +17,7 @@ class AbstractNetwork(HeuristicInterface):
 
     @staticmethod
     def board_to_tensor(state):
-        board_tensor = torch.zeros((6, 64))
+        board_tensor = torch.zeros((6, 64), dtype=torch.int8)
         for square in chess.SQUARES:
             piece = state.piece_at(square)
             if piece is None:
