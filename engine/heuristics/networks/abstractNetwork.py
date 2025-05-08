@@ -37,7 +37,7 @@ class AbstractNetwork(HeuristicInterface):
         return output_vector
 
     def evaluate(self, state):
-        outcome = state.outcome(claim_draw=True)
+        outcome = state.outcome()
         if outcome is not None:
             winner = outcome.winner
             return OUTCOMES[winner]
