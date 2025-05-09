@@ -18,13 +18,10 @@ class AbstractNetwork(HeuristicInterface):
     @staticmethod
     def board_to_tensor(state):
         board_tensor = torch.zeros((6, 64), dtype=torch.int8)
-        for square in chess.SQUARES:
-            piece = state.piece_at(square)
-            if piece is None:
-                continue
-
+        p_map = state.piece_map()
+        for square, piece in p_map.items():
             layer = piece.piece_type - 1
-            if piece.color is chess.WHITE:
+            if piece.color:
                 board_tensor[layer, square] = 1
             else:
                 board_tensor[layer, square] = -1
@@ -49,14 +46,15 @@ class AbstractNetwork(HeuristicInterface):
 if __name__ == "__main__":
     from time import perf_counter_ns as ns
     from tqdm import tqdm
-    from statistics import median
+    from statistics import mean
 
     times = []
-    for _ in tqdm(range(100_000)):
+    b = chess.Board()
+    for _ in tqdm(range(10_000)):
         start = ns()
-        AbstractNetwork.board_to_tensor(chess.Board())
+        AbstractNetwork.board_to_tensor(b)
         end = ns()
 
         times.append(end - start)
 
-    print(f"{median(times) / 1000}μs")
+    print(f"{mean(times) / 1000}μs")
