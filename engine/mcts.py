@@ -3,6 +3,7 @@ from time import perf_counter
 
 from engine.node import Node
 from engine.utils import get_best_move
+from engine.LRUCache import LRUCache
 
 
 class MCTS:
@@ -10,6 +11,7 @@ class MCTS:
         self.time_out = time_out  # sec
         self.tree_evaluator = tree_evaluator
         self.rollout_heuristic = rollout_heuristic
+        self.LRUCache = LRUCache(maxsize=20_000)
 
         self.set_position(position)
 
@@ -71,7 +73,10 @@ class MCTS:
                 node = self.tree_policy(node, state.turn)
                 state.push(node.move)
 
-            result = self.rollout_heuristic.evaluate(state)
+            result = self.LRUCache.get(state)
+            if result is None:
+                result = self.rollout_heuristic.evaluate(state)
+                self.LRUCache.put(state, result)
 
             while node.has_parent():
                 node.update(result)
