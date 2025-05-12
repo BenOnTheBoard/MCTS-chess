@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-from engine.heuristics.networks.convNetwork import ConvNetwork
+from engine.heuristics.networks.dualPathNetwork import DualPathNetwork
 
 
 class ChessDataset(Dataset):
@@ -27,7 +27,7 @@ class ChessDataset(Dataset):
             y = torch.sigmoid(y)
 
             self.data.append((line_tsr, y))
-            self.data.append((mirror_line_tsr, 1-y))
+            self.data.append((mirror_line_tsr, 1 - y))
 
     def __len__(self):
         return len(self.data)
@@ -57,13 +57,13 @@ def learning_rate_function(start, ep, total_ep):
 
 def main():
     model = None
-    network_type = ConvNetwork
+    network_type = DualPathNetwork
     network = network_type(model=model)
 
     data_filename = "data/LesserTDRand.txt"
     tests_filename = "data/LesserTestData.txt"
     output_filename = "models/new_cnn.pt"
-    loss_fn = torch.nn.MSELoss()
+    loss_fn = torch.nn.BCELoss()
     total_epochs = 100
     init_learning_rate = 1e-1
     batch_size = 4096
