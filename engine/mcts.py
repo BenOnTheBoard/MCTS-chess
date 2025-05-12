@@ -59,6 +59,19 @@ class MCTS:
 
         return best_node
 
+    def evaluate_state(self, state):
+        result = self.LRUCache.get(state)
+        if result is None:
+            result = self.rollout_heuristic.evaluate(state)
+            self.LRUCache.put(state, result)
+        return result
+
+    def propagate_updates(self, node, result):
+        while node.has_parent():
+            node.update(result)
+            node = node.parent
+        self.root_node.update(result)
+
     def get_move(self):
         start = perf_counter()
         while (perf_counter() - start) < self.time_out:
@@ -70,17 +83,13 @@ class MCTS:
 
             node.expand_node(state)
             if not node.is_leaf():
-                node = self.tree_policy(node, state.turn)
-                state.push(node.move)
-
-            result = self.LRUCache.get(state)
-            if result is None:
-                result = self.rollout_heuristic.evaluate(state)
-                self.LRUCache.put(state, result)
-
-            while node.has_parent():
-                node.update(result)
-                node = node.parent
-            self.root_node.update(result)
+                for child in node.children:
+                    state.push(child.move)
+                    result = self.evaluate_state(state)
+                    self.propagate_updates(child, result)
+                    state.pop()
+            else:
+                result = self.evaluate_state(state)
+                self.propagate_updates(node, result)
 
         return get_best_move(self.root_node, self.position.turn)
