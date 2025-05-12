@@ -11,7 +11,7 @@ class MCTS:
         self.time_out = time_out  # sec
         self.tree_evaluator = tree_evaluator
         self.rollout_heuristic = rollout_heuristic
-        self.LRUCache = LRUCache(maxsize=20_000)
+        self.LRUCache = LRUCache(maxsize=42_000)
 
         self.set_position(position)
 
