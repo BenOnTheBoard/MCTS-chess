@@ -1,4 +1,3 @@
-from copy import deepcopy
 from time import perf_counter
 
 from engine.node import Node
@@ -75,13 +74,14 @@ class MCTS:
     def get_move(self):
         start = perf_counter()
         while (perf_counter() - start) < self.time_out:
-            node, state = self.root_node, deepcopy(self.position)
+            node, state = self.root_node, self.position.copy(stack=False)
 
             while not node.is_leaf():
                 node = self.tree_policy(node, state.turn)
                 state.push(node.move)
 
             node.expand_node(state)
+
             if not node.is_leaf():
                 for child in node.children:
                     state.push(child.move)
