@@ -56,7 +56,7 @@ def learning_rate_function(start, ep, total_ep):
 
 
 def main():
-    model = torch.load("models/dpn.pt", weights_only=False)
+    model = None
     network_type = DualPathNetwork
     network = network_type(model=model)
 

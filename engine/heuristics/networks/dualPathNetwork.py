@@ -26,6 +26,11 @@ class DualPathModel(nn.Module):
             nn.Linear(134, 256),
             nn.ReLU(),
             nn.Linear(256, 1),
+            nn.ReLU(),
+        )
+
+        self.end_layers = nn.Sequential(
+            nn.Linear(7, 1),
             nn.Sigmoid(),
         )
 
@@ -36,7 +41,9 @@ class DualPathModel(nn.Module):
         material_scores = piece_counts * self.material_values
         combined = torch.cat([cnn_out, material_scores], dim=1)
 
-        return self.fc_layers(combined)
+        position_score = self.fc_layers(combined)
+        final_combined = torch.cat([position_score, material_scores], dim=1)
+        return self.end_layers(final_combined)
 
 
 class DualPathNetwork(AbstractNetwork):
