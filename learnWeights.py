@@ -56,13 +56,13 @@ def learning_rate_function(start, ep, total_ep):
 
 
 def main():
-    model = None
+    model = torch.load("models/dpn.pt", weights_only=False)
     network_type = DualPathNetwork
     network = network_type(model=model)
 
     data_filename = "data/LesserTDRand.txt"
     tests_filename = "data/LesserTestData.txt"
-    output_filename = "models/new_cnn.pt"
+    output_filename = "models/new_dpn.pt"
     loss_fn = torch.nn.BCELoss()
     total_epochs = 100
     init_learning_rate = 1e-1
