@@ -14,31 +14,34 @@ def extract_stockfish_move(response):
     return move
 
 
-SF_SEARCH_DEPTH = 12
-stockfish = chess.engine.SimpleEngine.popen_uci(
-    r"stockfish\stockfish-windows-x86-64-avx2.exe"
-)
-
-board = chess.Board()
-
-model = torch.load("models/dpn.pt", weights_only=False)
-model.eval()
-
-mcts = MCTS(board, 20, UCT(3), DualPathNetwork(model))
-while not mcts.position.is_game_over():
-    white_choice = mcts.get_move()
+def print_analysis(mcts):
     print(mcts.root_node.visits)
     print("Move analysis:")
     for child in mcts.root_node.children:
         print(f"{child.move.uci()}\t{child.visits}\t{(child.score / child.visits):.2f}")
-    mcts.add_move(white_choice)
 
-    print()
-    print(mcts.position)
 
-    black_choice = stockfish.play(mcts.position, chess.engine.Limit(time=0.1)).move
-    mcts.add_move(black_choice)
+if __name__ == "__main__":
+    stockfish = chess.engine.SimpleEngine.popen_uci(
+        r"stockfish\stockfish-windows-x86-64-avx2.exe"
+    )
 
-    print()
-    print(black_choice)
-    print(mcts.position)
+    board = chess.Board()
+
+    model = torch.load("models/dpn.pt", weights_only=False)
+    model.eval()
+
+    mcts = MCTS(board, 20, UCT(3), DualPathNetwork(model))
+    while not mcts.position.is_game_over():
+        white_choice = mcts.get_move()
+        mcts.add_move(white_choice)
+
+        print()
+        print(mcts.position)
+
+        black_choice = stockfish.play(mcts.position, chess.engine.Limit(time=0.1)).move
+        mcts.add_move(black_choice)
+
+        print()
+        print(black_choice)
+        print(mcts.position)
