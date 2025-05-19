@@ -29,7 +29,7 @@ def material_balance(piece_map):
 def node_comparator(node):
     if node.visits == 0:
         return 0.5
-    return node.score / node.visits
+    return node.quality
 
 
 def get_best_move(node, is_white):

@@ -19,7 +19,7 @@ def print_analysis(mcts):
     print(mcts.root_node.visits)
     print("Move analysis:")
     for child in mcts.root_node.children:
-        print(f"{child.move.uci()}\t{child.visits}\t{(child.score / child.visits):.2f}")
+        print(f"{child.move.uci()}\t{child.visits}\t{(child.quality):.2f}")
 
 
 def print_principal_variation(mcts):
