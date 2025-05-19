@@ -22,10 +22,10 @@ def print_analysis(mcts):
         print(f"{child.move.uci()}\t{child.visits}\t{(child.score / child.visits):.2f}")
 
 
-def print_principal_variation(mcts, is_white):
+def print_principal_variation(mcts):
     node = mcts.root_node
     moves = []
-    turn = is_white
+    turn = mcts.position.turn
     while not node.is_leaf():
         node.children.sort(key=node_comparator)
         if turn:
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     mcts = MCTS(board, 40, UCT(3), DualPathNetwork(model))
     while not mcts.position.is_game_over():
         white_choice = mcts.get_move()
-        print_principal_variation(mcts, True)
+        print_principal_variation(mcts)
         print_analysis(mcts)
         mcts.add_move(white_choice)
 
