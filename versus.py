@@ -5,6 +5,7 @@ import torch
 from engine.heuristics.networks.dualPathNetwork import DualPathNetwork
 from engine.mcts import MCTS
 from engine.treeEvaluators.UCT import UCT
+from engine.backpropagationRules.meanChild import MeanChild
 from engine.utils import node_comparator
 
 
@@ -48,7 +49,7 @@ if __name__ == "__main__":
     model = torch.load("models/dpn.pt", weights_only=False)
     model.eval()
 
-    mcts = MCTS(board, 40, UCT(3), DualPathNetwork(model))
+    mcts = MCTS(board, 60, UCT(2.5), DualPathNetwork(model), MeanChild())
     while not mcts.position.is_game_over():
         white_choice = mcts.get_move()
         print_principal_variation(mcts)

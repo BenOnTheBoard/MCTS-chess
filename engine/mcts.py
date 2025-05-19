@@ -6,10 +6,18 @@ from engine.LRUCache import LRUCache
 
 
 class MCTS:
-    def __init__(self, position, time_out, tree_evaluator, rollout_heuristic):
+    def __init__(
+        self,
+        position,
+        time_out,
+        tree_evaluator,
+        rollout_heuristic,
+        backpropagation_rule,
+    ):
         self.time_out = time_out  # sec
         self.tree_evaluator = tree_evaluator
         self.rollout_heuristic = rollout_heuristic
+        self.backpropagation_rule = backpropagation_rule
         self.LRUCache = LRUCache(maxsize=42_000)
 
         self.set_position(position)
@@ -65,13 +73,14 @@ class MCTS:
             self.LRUCache.put(state, result)
         return result
 
-    def propagate_updates(self, node, result):
+    def propagate_updates(self, node, value):
         while node.has_parent():
-            node.update_quality(
-                node.quality + (result - node.quality) / (node.visits + 1)
-            )
+            new_quality, next_value = self.backpropagation_rule.calculate(node, value)
+            node.update_quality(new_quality)
+            value = next_value
             node = node.parent
-        node.update_quality(node.quality + (result - node.quality) / (node.visits + 1))
+        new_quality, _ = self.backpropagation_rule.calculate(node, value)
+        node.update_quality(new_quality)
 
     def get_move(self):
         start = perf_counter()
