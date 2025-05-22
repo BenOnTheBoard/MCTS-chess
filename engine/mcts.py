@@ -18,7 +18,7 @@ class MCTS:
         self.tree_evaluator = tree_evaluator
         self.rollout_heuristic = rollout_heuristic
         self.backpropagation_rule = backpropagation_rule
-        self.LRUCache = LRUCache(maxsize=42_000)
+        self.LRUCache = LRUCache(maxsize=100_000)
 
         self.set_position(position)
 

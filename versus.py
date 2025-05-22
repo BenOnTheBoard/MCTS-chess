@@ -48,9 +48,9 @@ if __name__ == "__main__":
     model = torch.load("models/dpn.pt", weights_only=False)
     model.eval()
 
-    time = 20
-    white = MCTS(board, time, UCT(2.5), DualPathNetwork(model), MeanChild())
-    black = MCTS(board, time, UCT(2.5), DualPathNetwork(model), ApproxSoftMax(1))
+    time = 4
+    white = MCTS(board, time, UCT(2), DualPathNetwork(model), ApproxSoftMax(1.8))
+    black = MCTS(board, time, UCT(2), DualPathNetwork(model), ApproxSoftMax(1.2))
 
     while not black.position.is_game_over():
         white_choice = white.get_move()
