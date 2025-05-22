@@ -5,6 +5,7 @@ import torch
 from engine.heuristics.networks.dualPathNetwork import DualPathNetwork
 from engine.mcts import MCTS
 from engine.treeEvaluators.UCT import UCT
+from engine.backpropagationRules.approxSoftMax import ApproxSoftMax
 from engine.backpropagationRules.meanChild import MeanChild
 from engine.utils import node_comparator
 
@@ -49,19 +50,30 @@ if __name__ == "__main__":
     model = torch.load("models/dpn.pt", weights_only=False)
     model.eval()
 
-    mcts = MCTS(board, 60, UCT(2.5), DualPathNetwork(model), MeanChild())
-    while not mcts.position.is_game_over():
-        white_choice = mcts.get_move()
-        print_principal_variation(mcts)
-        print_analysis(mcts)
-        mcts.add_move(white_choice)
+    time = 20
+    white = MCTS(board, time, UCT(2.5), DualPathNetwork(model), MeanChild())
+    black = MCTS(board, time, UCT(2.5), DualPathNetwork(model), ApproxSoftMax(1))
+    
+    while not black.position.is_game_over():
+        white_choice = white.get_move()
+        print_principal_variation(white)
+        print_analysis(white)
+
+        white.add_move(white_choice)
+        black.add_move(white_choice)
 
         print()
-        print(mcts.position)
+        print(white.position)
 
-        black_choice = stockfish.play(mcts.position, chess.engine.Limit(time=0.1)).move
-        mcts.add_move(black_choice)
+        if white.position.is_game_over():
+            break
+
+        black_choice = black.get_move()
+        print_principal_variation(black)
+        print_analysis(black)
+
+        white.add_move(black_choice)
+        black.add_move(black_choice)
 
         print()
-        print(black_choice)
-        print(mcts.position)
+        print(black.position)
