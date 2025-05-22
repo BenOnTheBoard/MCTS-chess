@@ -27,15 +27,13 @@ def print_analysis(mcts):
 def print_principal_variation(mcts):
     node = mcts.root_node
     moves = []
-    turn = mcts.position.turn
     while not node.is_leaf():
         node.children.sort(key=node_comparator)
-        if turn:
+        if node.turn:
             node = node.children[-1]
         else:
             node = node.children[0]
         moves.append(node.move)
-        turn = not turn
 
     print(mcts.position.variation_san(moves))
 
@@ -53,7 +51,7 @@ if __name__ == "__main__":
     time = 20
     white = MCTS(board, time, UCT(2.5), DualPathNetwork(model), MeanChild())
     black = MCTS(board, time, UCT(2.5), DualPathNetwork(model), ApproxSoftMax(1))
-    
+
     while not black.position.is_game_over():
         white_choice = white.get_move()
         print_principal_variation(white)

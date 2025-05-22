@@ -1,6 +1,7 @@
 class Node:
-    def __init__(self, move, parent):
+    def __init__(self, move, turn, parent):
         self.move = move
+        self.turn = turn
         self.parent = parent
         self.children = None
         self.quality = 0
@@ -8,7 +9,9 @@ class Node:
 
     def expand_node(self, state):
         if self.children is None and state.outcome() is None:
-            self.children = [Node(move, self) for move in state.legal_moves]
+            self.children = [
+                Node(move, not self.turn, self) for move in state.legal_moves
+            ]
 
     def update_quality(self, quality):
         if quality > 1 or quality < 0:

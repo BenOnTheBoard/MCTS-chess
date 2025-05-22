@@ -32,9 +32,9 @@ def node_comparator(node):
     return node.quality
 
 
-def get_best_move(node, is_white):
+def get_best_move(node):
     node.children.sort(key=node_comparator)
-    if is_white:
+    if node.turn:
         return node.children[-1].move
     else:
         return node.children[0].move

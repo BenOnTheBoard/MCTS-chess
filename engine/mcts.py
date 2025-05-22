@@ -23,7 +23,7 @@ class MCTS:
         self.set_position(position)
 
     def set_position(self, new_position):
-        self.root_node = Node(None, None)
+        self.root_node = Node(None, new_position.turn, None)
         self.position = new_position.copy()
 
     def add_move(self, move):
@@ -36,15 +36,15 @@ class MCTS:
                     found_child = True
                     break
         if not found_child:
-            self.root_node = Node(None, None)
+            self.root_node = Node(None, not self.root_node.turn, None)
 
         self.position.push(move)
 
-    def tree_policy(self, node, is_white):
+    def tree_policy(self, node):
         if node.is_leaf():
             return node
 
-        if is_white:
+        if node.turn:
             best_value = -float("inf")
         else:
             best_value = float("inf")
@@ -54,9 +54,9 @@ class MCTS:
             if child.visits == 0:
                 return child
 
-            child_value = self.tree_evaluator.evaluate(child, node, is_white)
+            child_value = self.tree_evaluator.evaluate(child, node)
 
-            if is_white:
+            if node.turn:
                 if child_value > best_value:
                     best_value = child_value
                     best_node = child
@@ -89,7 +89,7 @@ class MCTS:
             node, state = self.root_node, self.position.copy(stack=False)
 
             while not node.is_leaf():
-                node = self.tree_policy(node, state.turn)
+                node = self.tree_policy(node)
                 state.push(node.move)
 
             node.expand_node(state)
@@ -104,4 +104,4 @@ class MCTS:
                 result = self.evaluate_state(state)
                 self.propagate_updates(node, result)
 
-        return get_best_move(self.root_node, self.position.turn)
+        return get_best_move(self.root_node)
