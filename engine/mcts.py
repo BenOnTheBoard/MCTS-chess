@@ -28,12 +28,13 @@ class MCTS:
 
     def add_move(self, move):
         found_child = False
-        for child in self.root_node.children:
-            if child.move == move:
-                child.parent = None
-                self.root_node = child
-                found_child = True
-                break
+        if self.root_node.children is not None:
+            for child in self.root_node.children:
+                if child.move == move:
+                    child.parent = None
+                    self.root_node = child
+                    found_child = True
+                    break
         if not found_child:
             self.root_node = Node(None, None)
 
