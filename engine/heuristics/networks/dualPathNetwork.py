@@ -9,7 +9,7 @@ class DualPathModel(nn.Module):
         super(DualPathModel, self).__init__()
 
         self.cnn_path = nn.Sequential(
-            nn.Conv2d(6, 16, (3, 3), padding=1),
+            nn.Conv2d(11, 16, (3, 3), padding=1),
             nn.BatchNorm2d(16),
             nn.ReLU(),
             nn.Conv2d(16, 32, (3, 3), padding=1),
@@ -23,27 +23,21 @@ class DualPathModel(nn.Module):
         self.material_values = nn.Parameter(torch.randn(6))
 
         self.fc_layers = nn.Sequential(
-            nn.Linear(134, 256),
+            nn.Linear(139, 256),
             nn.ReLU(),
             nn.Linear(256, 1),
-            nn.ReLU(),
-        )
-
-        self.end_layers = nn.Sequential(
-            nn.Linear(7, 1),
             nn.Sigmoid(),
         )
 
     def forward(self, x):
         cnn_out = self.cnn_path(x)
-        piece_counts = x.sum(dim=[2, 3])
+        piece_counts = x.sum(dim=[2, 3])[:, :6]
+        other_information = x[:, 6:11, 0, 0]
 
         material_scores = piece_counts * self.material_values
-        combined = torch.cat([cnn_out, material_scores], dim=1)
+        combined = torch.cat([cnn_out, material_scores, other_information], dim=1)
 
-        position_score = self.fc_layers(combined)
-        final_combined = torch.cat([position_score, material_scores], dim=1)
-        return self.end_layers(final_combined)
+        return self.fc_layers(combined)
 
 
 class DualPathNetwork(AbstractNetwork):
@@ -53,7 +47,7 @@ class DualPathNetwork(AbstractNetwork):
     @staticmethod
     def board_to_tensor(state):
         tensor = AbstractNetwork.board_to_tensor(state)
-        return tensor.view(1, 6, 8, 8)
+        return tensor.view(1, 11, 8, 8)
 
 
 if __name__ == "__main__":

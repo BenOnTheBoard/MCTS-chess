@@ -17,7 +17,7 @@ class AbstractNetwork(HeuristicInterface):
 
     @staticmethod
     def board_to_tensor(state):
-        board_tensor = torch.zeros((6, 64), dtype=torch.int8)
+        board_tensor = torch.zeros((11, 64), dtype=torch.int8)
         p_map = state.piece_map()
         for square, piece in p_map.items():
             layer = piece.piece_type - 1
@@ -25,6 +25,17 @@ class AbstractNetwork(HeuristicInterface):
                 board_tensor[layer, square] = 1
             else:
                 board_tensor[layer, square] = -1
+
+        if state.has_kingside_castling_rights(chess.WHITE):
+            board_tensor[6, :] = 1
+        if state.has_queenside_castling_rights(chess.WHITE):
+            board_tensor[7, :] = 1
+        if state.has_kingside_castling_rights(chess.BLACK):
+            board_tensor[8, :] = 1
+        if state.has_queenside_castling_rights(chess.BLACK):
+            board_tensor[9, :] = 1
+        if state.turn:
+            board_tensor[10, :] = 1
 
         return board_tensor
 

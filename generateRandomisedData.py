@@ -4,7 +4,7 @@ from random import choice
 from tqdm import tqdm
 
 RAND_START_DEPTH = 6
-SF_SEARCH_DEPTH = 8
+SF_SEARCH_DEPTH = 10
 MAX_PLIES = 100
 stockfish = chess.engine.SimpleEngine.popen_uci(
     r"stockfish\stockfish-windows-x86-64-avx2.exe"
@@ -31,4 +31,4 @@ def generate(games):
 
 
 if __name__ == "__main__":
-    generate(8_000)
+    generate(80_000)

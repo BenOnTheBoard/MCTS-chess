@@ -39,7 +39,7 @@ class ChessDataset(Dataset):
 def process_batch(network, batch, loss_fn):
     board_tensor, targets = batch
     board_tensor = board_tensor.to(torch.float32)
-    board_tensor = board_tensor.view(len(board_tensor), 6, 8, 8)
+    board_tensor = board_tensor.view(len(board_tensor), 11, 8, 8)
 
     predictions = network.model(board_tensor)
     loss = loss_fn(predictions, targets)
@@ -64,8 +64,8 @@ def main():
     tests_filename = "data/LesserTestData.txt"
     output_filename = "models/new_dpn.pt"
     loss_fn = torch.nn.BCELoss()
-    total_epochs = 100
-    init_learning_rate = 1e-1
+    total_epochs = 1_000
+    init_learning_rate = 1e-2
     batch_size = 4096
 
     dataset = ChessDataset(data_filename, network_type.board_to_tensor)
