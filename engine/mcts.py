@@ -1,4 +1,4 @@
-from time import perf_counter
+from tqdm import tqdm
 
 from engine.node import Node
 from engine.utils import get_best_move
@@ -9,12 +9,10 @@ class MCTS:
     def __init__(
         self,
         position,
-        time_out,
         tree_evaluator,
         rollout_heuristic,
         backpropagation_rule,
     ):
-        self.time_out = time_out  # sec
         self.tree_evaluator = tree_evaluator
         self.rollout_heuristic = rollout_heuristic
         self.backpropagation_rule = backpropagation_rule
@@ -83,25 +81,29 @@ class MCTS:
         new_quality, _ = self.backpropagation_rule.calculate(node, value)
         node.update_quality(new_quality)
 
-    def get_move(self):
-        start = perf_counter()
-        while (perf_counter() - start) < self.time_out:
-            node, state = self.root_node, self.position.copy(stack=False)
+    def get_move(self, node_count):
+        nodes_evaluated = 0
+        with tqdm(total=node_count, desc="Evaluated nodes") as pbar:
+            while nodes_evaluated < node_count:
+                node, state = self.root_node, self.position.copy(stack=False)
 
-            while not node.is_leaf():
-                node = self.tree_policy(node)
-                state.push(node.move)
+                while not node.is_leaf():
+                    node = self.tree_policy(node)
+                    state.push(node.move)
 
-            node.expand_node(state)
+                node.expand_node(state)
 
-            if not node.is_leaf():
-                for child in node.children:
-                    state.push(child.move)
+                if not node.is_leaf():
+                    for child in node.children:
+                        state.push(child.move)
+                        result = self.evaluate_state(state)
+                        self.propagate_updates(child, result)
+                        state.pop()
+                    nodes_evaluated += len(node.children)
+                    pbar.update(len(node.children))
+                else:
                     result = self.evaluate_state(state)
-                    self.propagate_updates(child, result)
-                    state.pop()
-            else:
-                result = self.evaluate_state(state)
-                self.propagate_updates(node, result)
+                    self.propagate_updates(node, result)
+                    pbar.update(1)
 
         return get_best_move(self.root_node)

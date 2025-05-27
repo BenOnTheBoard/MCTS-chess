@@ -48,12 +48,12 @@ if __name__ == "__main__":
     model = torch.load("models/dpn.pt", weights_only=False)
     model.eval()
 
-    time = 60
-    white = MCTS(board, time, UCT(2), DualPathNetwork(model), MeanChild())
-    black = MCTS(board, time, UCT(2), DualPathNetwork(model), ApproxSoftMax(0.5))
+    NODES_PER_MOVE = 1_000_000
+    white = MCTS(board, UCT(2), DualPathNetwork(model), MeanChild())
+    black = MCTS(board, UCT(2), DualPathNetwork(model), ApproxSoftMax(0.5))
 
     while not black.position.is_game_over():
-        white_choice = white.get_move()
+        white_choice = white.get_move(NODES_PER_MOVE)
         print_principal_variation(white)
         print_analysis(white)
 
@@ -66,7 +66,7 @@ if __name__ == "__main__":
         if white.position.is_game_over():
             break
 
-        black_choice = black.get_move()
+        black_choice = black.get_move(NODES_PER_MOVE)
         print_principal_variation(black)
         print_analysis(black)
 
