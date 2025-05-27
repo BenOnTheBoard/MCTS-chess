@@ -16,8 +16,8 @@ class AbstractNetwork(HeuristicInterface):
         raise NotImplementedError("Model forms must be supplied by subclass.")
 
     @staticmethod
-    def board_to_tensor(state):
-        board_tensor = torch.zeros((11, 64), dtype=torch.int8)
+    def board_to_tensor(state, data_type=torch.int8):
+        board_tensor = torch.zeros((11, 64), dtype=data_type)
         piece_types = [
             state.pawns,
             state.knights,
@@ -49,7 +49,7 @@ class AbstractNetwork(HeuristicInterface):
         return board_tensor
 
     def tensor_eval(self, state):
-        input_vector = self.board_to_tensor(state).to(torch.float32)
+        input_vector = self.board_to_tensor(state, data_type=torch.float32)
         output_vector = self.model(input_vector)
         return output_vector
 
@@ -66,15 +66,20 @@ class AbstractNetwork(HeuristicInterface):
 if __name__ == "__main__":
     from time import perf_counter_ns as ns
     from tqdm import tqdm
-    from statistics import mean
+    from statistics import mean, median
+    from random import choice
 
     times = []
-    b = chess.Board()
-    for _ in tqdm(range(10_000)):
-        start = ns()
-        AbstractNetwork.board_to_tensor(b)
-        end = ns()
+    for _ in tqdm(range(20_000)):
+        b = chess.Board()
+        for _ in range(20):
+            moves = [m for m in b.legal_moves]
+            if moves:
+                b.push(choice(moves))
 
+        start = ns()
+        tsr = AbstractNetwork.board_to_tensor(b, data_type=torch.float32)
+        end = ns()
         times.append(end - start)
 
-    print(f"{mean(times) / 1000}μs")
+    print(f"Mean:\t{mean(times) / 1000}μs\nMedian:\t{median(times) / 1000}μs")

@@ -45,8 +45,8 @@ class DualPathNetwork(AbstractNetwork):
         self.model = DualPathModel()
 
     @staticmethod
-    def board_to_tensor(state):
-        tensor = AbstractNetwork.board_to_tensor(state)
+    def board_to_tensor(state, data_type):
+        tensor = AbstractNetwork.board_to_tensor(state, data_type)
         return tensor.view(1, 11, 8, 8)
 
 
