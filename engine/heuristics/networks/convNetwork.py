@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 from engine.heuristics.networks.abstractNetwork import AbstractNetwork
@@ -22,6 +23,6 @@ class ConvNetwork(AbstractNetwork):
         )
 
     @staticmethod
-    def board_to_tensor(state, data_type):
+    def board_to_tensor(state, data_type=torch.int8):
         tensor = AbstractNetwork.board_to_tensor(state, data_type)
         return tensor.view(1, 11, 8, 8)
