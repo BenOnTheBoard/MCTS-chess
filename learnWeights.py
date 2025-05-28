@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-from engine.heuristics.networks.dualPathNetwork import DualPathNetwork
+from engine.heuristics.networks.deltaOne import DeltaOne
 
 
 class ChessDataset(Dataset):
@@ -57,15 +57,15 @@ def learning_rate_function(start, ep, total_ep):
 
 def main():
     model = None
-    network_type = DualPathNetwork
+    network_type = DeltaOne
     network = network_type(model=model)
 
     data_filename = "data/LesserTDRand.txt"
     tests_filename = "data/LesserTestData.txt"
-    output_filename = "models/new_dpn.pt"
+    output_filename = "models/new_delta.pt"
     loss_fn = torch.nn.BCELoss()
-    total_epochs = 1_000
-    init_learning_rate = 1e-2
+    total_epochs = 100
+    init_learning_rate = 1e-1
     batch_size = 4096
 
     dataset = ChessDataset(data_filename, network_type.board_to_tensor)
@@ -101,7 +101,9 @@ def main():
             loss = process_batch(network, batch, loss_fn)
             test_loss += loss.item()
 
-        print(f"\t\t Model test loss: {test_loss / len(test_loader):.4f}\n")
+        print(f"""
+                Model test loss: {test_loss / len(test_loader):.4f}
+        """)
         torch.save(network.model, output_filename)
 
     print("\n\nTraining is done!")
