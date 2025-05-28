@@ -1,6 +1,6 @@
 import chess
-from math import cos, exp, pi
 import torch
+from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
@@ -47,14 +47,6 @@ def process_batch(network, batch, loss_fn):
     return loss
 
 
-def int_sigmoid(x):
-    return 1 / (1 + exp(-x))
-
-
-def learning_rate_function(start, ep, total_ep):
-    return start * ((1 + cos(pi * ep / total_ep)) / 2)
-
-
 def main():
     model = None
     network_type = DeltaOne
@@ -74,32 +66,33 @@ def main():
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False)
 
+    optimizer = torch.optim.Adam(network.model.parameters(), lr=init_learning_rate)
+    scheduler = CosineAnnealingLR(optimizer, T_max=total_epochs)
+
     for epoch in range(total_epochs):
         network.model.train()
-        learning_rate = learning_rate_function(init_learning_rate, epoch, total_epochs)
         total_loss = 0
         for batch in tqdm(train_loader):
+            optimizer.zero_grad()
             loss = process_batch(network, batch, loss_fn)
             total_loss += loss.item()
-
-            network.model.zero_grad()
             loss.backward()
+            optimizer.step()
 
-            with torch.no_grad():
-                for param in network.model.parameters():
-                    param -= learning_rate * param.grad
+        scheduler.step()
 
         print(f"""
                 Epoch: {epoch}
-                Learning Rate:{learning_rate:.6f}
+                Learning Rate: {scheduler.get_last_lr()[0]:.6f}
                 Avg. Training Loss: {total_loss / len(train_loader):.6f}
         """)
 
         network.model.eval()
         test_loss = 0
-        for batch in test_loader:
-            loss = process_batch(network, batch, loss_fn)
-            test_loss += loss.item()
+        with torch.no_grad():
+            for batch in test_loader:
+                loss = process_batch(network, batch, loss_fn)
+                test_loss += loss.item()
 
         print(f"""
                 Model test loss: {test_loss / len(test_loader):.4f}
