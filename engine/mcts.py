@@ -104,6 +104,7 @@ class MCTS:
                 else:
                     result = self.evaluate_state(state)
                     self.propagate_updates(node, result)
+                    nodes_evaluated += 1
                     pbar.update(1)
 
         return get_best_move(self.root_node)
