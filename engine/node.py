@@ -8,7 +8,7 @@ class Node:
         self.visits = 0
 
     def expand_node(self, state):
-        if self.children is None and state.outcome() is None:
+        if self.children is None and state.outcome(claim_draw=True) is None:
             self.children = [
                 Node(move, not self.turn, self) for move in state.legal_moves
             ]
