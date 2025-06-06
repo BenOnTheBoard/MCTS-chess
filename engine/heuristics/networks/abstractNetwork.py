@@ -26,14 +26,17 @@ class AbstractNetwork(HeuristicInterface):
             state.queens,
             state.kings,
         ]
-        for layer, bitboard in enumerate(piece_types):
-            white_bb = bitboard & state.occupied_co[chess.WHITE]
-            for sq in chess.SquareSet(white_bb):
-                board_tensor[layer, sq] = 1
+        white_locations = state.occupied_co[chess.WHITE]
+        black_locations = state.occupied_co[chess.BLACK]
 
-            black_bb = bitboard & state.occupied_co[chess.BLACK]
-            for sq in chess.SquareSet(black_bb):
-                board_tensor[layer, sq] = -1
+        for layer, bitboard in enumerate(piece_types):
+            white_bb_squares = chess.SquareSet(bitboard & white_locations)
+            if white_bb_squares:
+                board_tensor[layer, list(white_bb_squares)] = 1
+
+            black_bb_squares = chess.SquareSet(bitboard & black_locations)
+            if black_bb_squares:
+                board_tensor[layer, list(black_bb_squares)] = 1
 
         if state.has_kingside_castling_rights(chess.WHITE):
             board_tensor[6, :] = 1
