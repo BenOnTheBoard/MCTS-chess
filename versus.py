@@ -3,7 +3,7 @@ import chess.engine
 import torch
 
 from engine.heuristics.networks.dualPathNetwork import DualPathNetwork
-from engine.heuristics.networks.chessConvNetwork import ChessConvNetwork
+from engine.heuristics.networks.deltaOne import DeltaOne
 from engine.mcts import MCTS
 from engine.treeEvaluators.UCT import UCT
 from engine.backpropagationRules.approxSoftMax import ApproxSoftMax
@@ -46,14 +46,12 @@ if __name__ == "__main__":
 
     board = chess.Board()
 
-    model_dpn = torch.load("models/dpn.pt", weights_only=False)
-    model_dpn.eval()
-    model_ccnn = torch.load("models/ccnn.pt", weights_only=False)
-    model_ccnn.eval()
+    model_delta = torch.load("models/new_delta.pt", weights_only=False)
+    model_delta.eval()
 
-    NODES_PER_MOVE = 100_000
-    white = MCTS(board, UCT(2), ChessConvNetwork(model_ccnn), MeanChild())
-    black = MCTS(board, UCT(2), DualPathNetwork(model_dpn), ApproxSoftMax(0.5))
+    NODES_PER_MOVE = 32_000
+    white = MCTS(board, UCT(1.5), DeltaOne(model_delta), MeanChild())
+    black = MCTS(board, UCT(1.5), DeltaOne(model_delta), MeanChild())
 
     while not black.position.is_game_over():
         white_choice = white.get_move(NODES_PER_MOVE)
