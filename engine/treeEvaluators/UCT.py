@@ -7,7 +7,7 @@ class UCT(EvaluatorInterface):
     def __init__(self, C):
         self.C = C
 
-    def evaluate(self, child, node):
+    def evaluate(self, child, node, _):
         exploring_term = self.C * sqrt(log(node.visits) / child.visits)
 
         if node.turn:

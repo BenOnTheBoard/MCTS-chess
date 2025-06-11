@@ -1,5 +1,5 @@
 class EvaluatorInterface:
-    def evaluate(self, node, is_max_player):
+    def evaluate(self, child, node, state):
         """
         Return a value given a child node.
         """
