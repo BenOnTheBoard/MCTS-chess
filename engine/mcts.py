@@ -38,7 +38,7 @@ class MCTS:
 
         self.position.push(move)
 
-    def tree_policy(self, node):
+    def tree_policy(self, node, state):
         if node.is_leaf():
             return node
 
@@ -52,7 +52,7 @@ class MCTS:
             if child.visits == 0:
                 return child
 
-            child_value = self.tree_evaluator.evaluate(child, node)
+            child_value = self.tree_evaluator.evaluate(child, node, state)
 
             if node.turn:
                 if child_value > best_value:
@@ -86,12 +86,12 @@ class MCTS:
             node, state = self.root_node, self.position.copy(stack=False)
 
             while not node.is_leaf():
-                node = self.tree_policy(node)
+                node = self.tree_policy(node, state)
                 state.push(node.move)
 
             node.expand_node(state)
 
-            node = self.tree_policy(node)
+            node = self.tree_policy(node, state)
             state.push(node.move)
 
             result = self.evaluate_state(state)
