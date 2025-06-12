@@ -15,7 +15,7 @@ class CaptureUCT(EvaluatorInterface):
 
     def evaluate(self, child, node, state):
         p = self.prior(child, state)
-        exploring_term = self.C * p * sqrt(node.visits / (1 + child.visits))
+        exploring_term = self.C * p * sqrt(log(node.visits) / child.visits)
 
         if node.turn:
             return child.quality + exploring_term
