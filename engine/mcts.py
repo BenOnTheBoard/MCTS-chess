@@ -81,8 +81,13 @@ class MCTS:
         new_quality, _ = self.backpropagation_rule.calculate(node, value)
         node.update_quality(new_quality)
 
-    def get_move(self, node_count):
-        for _ in tqdm(range(node_count)):
+    def get_move(self, node_count, tqdm_on=False):
+        if tqdm_on:
+            counter = tqdm(range(node_count))
+        else:
+            counter = range(node_count)
+
+        for _ in counter:
             node, state = self.root_node, self.position.copy(stack=False)
 
             while not node.is_leaf():
