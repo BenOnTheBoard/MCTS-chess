@@ -96,8 +96,9 @@ class MCTS:
 
             node.expand_node(state)
 
-            node = self.tree_policy(node, state)
-            state.push(node.move)
+            if not node.is_leaf():
+                node = self.tree_policy(node, state)
+                state.push(node.move)
 
             result = self.evaluate_state(state)
             self.propagate_updates(node, result)
