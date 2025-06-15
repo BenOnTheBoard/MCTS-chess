@@ -4,7 +4,7 @@ from random import choice
 import torch
 from tqdm import tqdm
 
-from engine.heuristics.networks.deltaOne import DeltaOne
+from engine.heuristics.networks.old.deltaOne import DeltaOne
 from engine.mcts import MCTS
 from engine.treeEvaluators.UCT import UCT
 from engine.treeEvaluators.captureUCT import CaptureUCT

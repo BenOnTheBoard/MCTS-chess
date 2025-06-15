@@ -1,6 +1,6 @@
 import torch
 
-from engine.heuristics.networks.deltaOne import DeltaOne
+from engine.heuristics.networks.old.deltaOne import DeltaOne
 from engine.treeEvaluators.UCT import UCT
 from engine.backpropagationRules.meanChild import MeanChild
 

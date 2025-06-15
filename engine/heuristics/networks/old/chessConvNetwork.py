@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from engine.heuristics.networks.abstractNetwork import AbstractNetwork
-from engine.heuristics.networks.chessConvs import ChessConv2d
+from engine.heuristics.networks.old.chessConvs import ChessConv2d
 
 
 class ChessConvNetwork(AbstractNetwork):
