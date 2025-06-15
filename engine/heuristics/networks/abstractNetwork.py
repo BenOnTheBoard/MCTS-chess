@@ -53,7 +53,8 @@ class AbstractNetwork(HeuristicInterface):
 
     def tensor_eval(self, state):
         input_vector = self.board_to_tensor(state, data_type=torch.float32)
-        output_vector = self.model(input_vector)
+        with torch.no_grad():
+            output_vector = self.model(input_vector)
         return output_vector
 
     def evaluate(self, state):
@@ -64,25 +65,3 @@ class AbstractNetwork(HeuristicInterface):
 
         output_vector = self.tensor_eval(state)
         return output_vector.item()
-
-
-if __name__ == "__main__":
-    from time import perf_counter_ns as ns
-    from tqdm import tqdm
-    from statistics import mean, median
-    from random import choice
-
-    times = []
-    for _ in tqdm(range(20_000)):
-        b = chess.Board()
-        for _ in range(20):
-            moves = [m for m in b.legal_moves]
-            if moves:
-                b.push(choice(moves))
-
-        start = ns()
-        tsr = AbstractNetwork.board_to_tensor(b, data_type=torch.float32)
-        end = ns()
-        times.append(end - start)
-
-    print(f"Mean:\t{mean(times) / 1000}μs\nMedian:\t{median(times) / 1000}μs")
