@@ -12,7 +12,7 @@ PIECE_VALUES = {
 OUTCOMES = {chess.WHITE: 1, chess.BLACK: 0, None: 0.5}
 
 DIRECTIONS = (
-    (-1, 0),  # N
+    (-1, 0),  # S, e4 is 2N
     (-1, 1),
     (0, 1),  # E
     (1, 1),
