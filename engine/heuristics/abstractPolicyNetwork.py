@@ -68,7 +68,7 @@ class AbstractPolicyNetwork(AbstractNetwork):
                 tensor[plane, row, col] = 1.0
         return tensor
 
-    def get_move_distribution(self, state):
+    def get_masked_move_distribution(self, state):
         distribution = self.tensor_eval(state)
         mask = self.board_to_legal_moves_mask(state)
 
