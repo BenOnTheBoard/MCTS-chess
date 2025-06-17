@@ -13,22 +13,19 @@ class PolicyDataset(Dataset):
         self.move_conversion = move_conversion
         self.data = []
         with open(filename, "r") as file:
-            content = file.readlines()
-
-        for line in tqdm(content):
-            fen, move = line.strip().split(",")
-            line_state = chess.Board(fen=fen)
-            line_tsr = self.board_conversion(line_state)
-
-            y = self.move_conversion(chess.Move.from_uci(move))
-
-            self.data.append((line_tsr, y))
+            self.data = file.readlines()
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
-        return self.data[idx]
+        fen, move = self.data[idx].strip().split(",")
+        line_state = chess.Board(fen=fen)
+        line_tsr = self.board_conversion(line_state)
+
+        y = self.move_conversion(chess.Move.from_uci(move))
+
+        return line_tsr, y
 
 
 def process_batch(network, batch, loss_fn):
