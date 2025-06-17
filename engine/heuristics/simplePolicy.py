@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from engine.heuristics.networks.abstractPolicyNetwork import AbstractPolicyNetwork
+from engine.heuristics.abstractPolicyNetwork import AbstractPolicyNetwork
 
 
 class GlobalSoftmax(nn.Module):

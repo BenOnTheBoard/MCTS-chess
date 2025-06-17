@@ -4,7 +4,6 @@ from random import choice
 import torch
 from tqdm import tqdm
 
-from engine.heuristics.networks.old.deltaOne import DeltaOne
 from engine.mcts import MCTS
 from engine.treeEvaluators.UCT import UCT
 from engine.treeEvaluators.captureUCT import CaptureUCT
@@ -115,15 +114,16 @@ def main():
     NODES_PER_MOVE = 2500
     RAND_START_DEPTH = 4  # ply
     GAMES = 100  # must be even
+
     player_one_config = (
         "models/new_delta.pt",
-        DeltaOne,
+        None,
         CaptureUCT(1.5, 0.15),
         MeanChild(),
     )
     player_two_config = (
         "models/new_delta.pt",
-        DeltaOne,
+        None,
         UCT(1.5),
         MeanChild(),
     )

@@ -4,8 +4,6 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-from engine.heuristics.networks.old.deltaOne import DeltaOne
-
 
 class ChessDataset(Dataset):
     def __init__(self, filename, conversion):
@@ -49,7 +47,7 @@ def process_batch(network, batch, loss_fn):
 
 def main():
     model = torch.load("models/new_delta.pt", weights_only=False)
-    network_type = DeltaOne
+    network_type = None
     network = network_type(model=model)
 
     data_filename = "data/TDRand.txt"

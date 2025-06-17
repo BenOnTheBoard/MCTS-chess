@@ -4,7 +4,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-from engine.heuristics.networks.simplePolicy import SimplePolicy
+from engine.heuristics.simplePolicy import SimplePolicy
 
 
 class PolicyDataset(Dataset):

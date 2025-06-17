@@ -1,7 +1,7 @@
 import chess
 import torch
 
-from engine.heuristics.networks.abstractNetwork import AbstractNetwork
+from engine.heuristics.abstractNetwork import AbstractNetwork
 from engine.values import DIRECTIONS, KNIGHTS_MOVES
 
 
