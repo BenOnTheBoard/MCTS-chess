@@ -17,13 +17,24 @@ class AbstractPolicyNetwork(AbstractNetwork):
 
         # all slides
         for dir_idx, (dr, dc) in enumerate(DIRECTIONS):
-            for dist in range(1, 8):
-                if row_diff == dr * dist and col_diff == dc * dist:
-                    return dir_idx * 7 + (dist - 1)
+            if (dr > 0) - (dr < 0) != (row_diff > 0) - (row_diff < 0):
+                continue
+            if (dc > 0) - (dc < 0) != (col_diff > 0) - (col_diff < 0):
+                continue
 
-        for idx, (dr, dc) in enumerate(KNIGHTS_MOVES):
-            if row_diff == dr and col_diff == dc:
-                return 56 + idx
+            if dr == 0:
+                dist = col_diff // dc
+                return dir_idx * 7 + (dist - 1)
+
+            dist = row_diff // dr
+            if dc == 0 or dist == col_diff // dc:
+                return dir_idx * 7 + (dist - 1)
+
+        try:
+            idx = KNIGHTS_MOVES.index((row_diff, col_diff))
+            return 56 + idx
+        except ValueError:
+            pass
 
         # underpromotions, 3 types × 3 directions = 9
         if promotion in AbstractPolicyNetwork.UNDERPROMOTION_TYPES:
@@ -55,7 +66,8 @@ class AbstractPolicyNetwork(AbstractNetwork):
             tensor[plane, row, col] = 1.0
         return tensor
 
-    def board_to_legal_moves_mask(self, board):
+    @staticmethod
+    def board_to_legal_moves_mask(board):
         tensor = torch.zeros((73, 8, 8), dtype=torch.float32)
         for move in board.legal_moves:
             plane = AbstractPolicyNetwork.move_to_plane(
