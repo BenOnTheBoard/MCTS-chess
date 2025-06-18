@@ -15,43 +15,43 @@ class AbstractPolicyNetwork(AbstractNetwork):
         row_diff = to_row - from_row
         col_diff = to_col - from_col
 
-        # all slides
-        for dir_idx, (dr, dc) in enumerate(DIRECTIONS):
-            if (dr > 0) - (dr < 0) != (row_diff > 0) - (row_diff < 0):
-                continue
-            if (dc > 0) - (dc < 0) != (col_diff > 0) - (col_diff < 0):
-                continue
+        if promotion not in AbstractPolicyNetwork.UNDERPROMOTION_TYPES:
+            # all slides, inc queen promotions
+            for dir_idx, (dr, dc) in enumerate(DIRECTIONS):
+                if (dr > 0) - (dr < 0) != (row_diff > 0) - (row_diff < 0):
+                    continue
+                if (dc > 0) - (dc < 0) != (col_diff > 0) - (col_diff < 0):
+                    continue
 
-            if dr == 0:
-                dist = col_diff // dc
-                return dir_idx * 7 + (dist - 1)
+                if dr == 0:
+                    dist = col_diff // dc
+                    return dir_idx * 7 + (dist - 1)
 
-            dist = row_diff // dr
-            if dc == 0 or dist == col_diff // dc:
-                return dir_idx * 7 + (dist - 1)
+                dist = row_diff // dr
+                if dc == 0 or dist == col_diff // dc:
+                    return dir_idx * 7 + (dist - 1)
 
-        try:
-            idx = KNIGHTS_MOVES.index((row_diff, col_diff))
-            return 56 + idx
-        except ValueError:
-            pass
+            try:
+                idx = KNIGHTS_MOVES.index((row_diff, col_diff))
+                return 56 + idx
+            except ValueError:
+                pass
 
         # underpromotions, 3 types × 3 directions = 9
-        if promotion in AbstractPolicyNetwork.UNDERPROMOTION_TYPES:
-            if abs(row_diff) == 1 or (row_diff == 0 and abs(col_diff) == 1):
-                for prom_idx, prom_piece in enumerate(
-                    AbstractPolicyNetwork.UNDERPROMOTION_TYPES
-                ):
-                    if promotion == prom_piece:
-                        # Straight
-                        if col_diff == 0:
-                            return 64 + prom_idx * 3
-                        # Left capture
-                        elif col_diff == -1:
-                            return 64 + prom_idx * 3 + 1
-                        # Right capture
-                        elif col_diff == 1:
-                            return 64 + prom_idx * 3 + 2
+        if abs(row_diff) == 1 or (row_diff == 0 and abs(col_diff) == 1):
+            for prom_idx, prom_piece in enumerate(
+                AbstractPolicyNetwork.UNDERPROMOTION_TYPES
+            ):
+                if promotion == prom_piece:
+                    # Straight
+                    if col_diff == 0:
+                        return 64 + prom_idx * 3
+                    # Left capture
+                    elif col_diff == -1:
+                        return 64 + prom_idx * 3 + 1
+                    # Right capture
+                    elif col_diff == 1:
+                        return 64 + prom_idx * 3 + 2
 
         return None
 
