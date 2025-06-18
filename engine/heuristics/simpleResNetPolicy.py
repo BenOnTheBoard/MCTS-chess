@@ -2,13 +2,16 @@ import torch
 import torch.nn as nn
 
 from engine.heuristics.abstractPolicyNetwork import AbstractPolicyNetwork
-from engine.heuristics.modules import GlobalSoftmax
+from engine.heuristics.modules import GlobalSoftmax, ResidualBlock
 
 
-class SimplePolicy(AbstractPolicyNetwork):
+class SimpleResNetPolicy(AbstractPolicyNetwork):
     def init_model(self):
         self.model = nn.Sequential(
-            nn.Conv2d(11, 73, (3, 3), padding=1),
+            ResidualBlock(11, 16),
+            ResidualBlock(16, 32),
+            ResidualBlock(32, 64),
+            nn.Conv2d(64, 73, kernel_size=1, bias=False),
             GlobalSoftmax(),
         )
 

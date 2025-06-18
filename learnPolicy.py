@@ -4,7 +4,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-from engine.heuristics.simplePolicy import SimplePolicy
+from engine.heuristics.simpleResNetPolicy import SimpleResNetPolicy
 
 
 class PolicyDataset(Dataset):
@@ -41,7 +41,7 @@ def process_batch(network, batch, loss_fn):
 
 def main():
     model = None
-    network_type = SimplePolicy
+    network_type = SimpleResNetPolicy
     network = network_type(model=model)
 
     data_filename = "data/MoveRand.txt"
