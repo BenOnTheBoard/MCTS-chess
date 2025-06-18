@@ -47,24 +47,22 @@ class AbstractPolicyNetwork(AbstractNetwork):
     @staticmethod
     def move_to_tensor(move):
         tensor = torch.zeros((73, 8, 8), dtype=torch.float32)
-        from_sq = move.from_square
-        to_sq = move.to_square
-        promotion = move.promotion
-        plane = AbstractPolicyNetwork.move_to_plane(from_sq, to_sq, promotion)
+        plane = AbstractPolicyNetwork.move_to_plane(
+            move.from_square, move.to_square, move.promotion
+        )
         if plane is not None:
-            row, col = divmod(from_sq, 8)
+            row, col = divmod(move.from_square, 8)
             tensor[plane, row, col] = 1.0
         return tensor
 
     def board_to_legal_moves_mask(self, board):
         tensor = torch.zeros((73, 8, 8), dtype=torch.float32)
         for move in board.legal_moves:
-            from_sq = move.from_square
-            to_sq = move.to_square
-            promotion = move.promotion
-            plane = AbstractPolicyNetwork.move_to_plane(from_sq, to_sq, promotion)
+            plane = AbstractPolicyNetwork.move_to_plane(
+                move.from_square, move.to_square, move.promotion
+            )
             if plane is not None:
-                row, col = divmod(from_sq, 8)
+                row, col = divmod(move.from_square, 8)
                 tensor[plane, row, col] = 1.0
         return tensor
 
