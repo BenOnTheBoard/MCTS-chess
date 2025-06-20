@@ -6,8 +6,6 @@ from engine.values import DIRECTIONS, KNIGHTS_MOVES
 
 
 class AbstractPolicyNetwork(AbstractNetwork):
-    UNDERPROMOTION_TYPES = (chess.KNIGHT, chess.BISHOP, chess.ROOK)
-
     @staticmethod
     def move_to_plane(from_square, to_square, promotion=None):
         from_row, from_col = divmod(from_square, 8)
@@ -15,21 +13,21 @@ class AbstractPolicyNetwork(AbstractNetwork):
         row_diff = to_row - from_row
         col_diff = to_col - from_col
 
-        if promotion not in AbstractPolicyNetwork.UNDERPROMOTION_TYPES:
-            # all slides, inc queen promotions
-            for dir_idx, (dr, dc) in enumerate(DIRECTIONS):
-                if (dr > 0) - (dr < 0) != (row_diff > 0) - (row_diff < 0):
-                    continue
-                if (dc > 0) - (dc < 0) != (col_diff > 0) - (col_diff < 0):
-                    continue
+        if promotion is None or promotion == chess.QUEEN:
+            row_diff_sgn = (row_diff > 0) - (row_diff < 0)
+            col_diff_sgn = (col_diff > 0) - (col_diff < 0)
 
-                if dr == 0:
-                    dist = col_diff // dc
+            try:
+                dir_idx = DIRECTIONS.index((row_diff_sgn, col_diff_sgn))
+                if row_diff_sgn == 0:
+                    dist = col_diff // col_diff_sgn
                     return dir_idx * 7 + (dist - 1)
 
-                dist = row_diff // dr
-                if dc == 0 or dist == col_diff // dc:
+                dist = row_diff // row_diff_sgn
+                if col_diff_sgn == 0 or dist == col_diff // col_diff_sgn:
                     return dir_idx * 7 + (dist - 1)
+            except ValueError:
+                pass
 
             try:
                 idx = KNIGHTS_MOVES.index((row_diff, col_diff))
@@ -37,23 +35,9 @@ class AbstractPolicyNetwork(AbstractNetwork):
             except ValueError:
                 pass
 
-        # underpromotions, 3 types × 3 directions = 9
-        if abs(row_diff) == 1 or (row_diff == 0 and abs(col_diff) == 1):
-            for prom_idx, prom_piece in enumerate(
-                AbstractPolicyNetwork.UNDERPROMOTION_TYPES
-            ):
-                if promotion == prom_piece:
-                    # Straight
-                    if col_diff == 0:
-                        return 64 + prom_idx * 3
-                    # Left capture
-                    elif col_diff == -1:
-                        return 64 + prom_idx * 3 + 1
-                    # Right capture
-                    elif col_diff == 1:
-                        return 64 + prom_idx * 3 + 2
-
-        return None
+        # col_diff is -1,0,1, left, straight, right
+        # underpromotion is 2,3,4, knight, bishop, rook
+        return 64 + (promotion - 2) * 3 + 1 + col_diff
 
     @staticmethod
     def move_to_tensor(move):
@@ -61,9 +45,8 @@ class AbstractPolicyNetwork(AbstractNetwork):
         plane = AbstractPolicyNetwork.move_to_plane(
             move.from_square, move.to_square, move.promotion
         )
-        if plane is not None:
-            row, col = divmod(move.from_square, 8)
-            tensor[plane, row, col] = 1.0
+        row, col = divmod(move.from_square, 8)
+        tensor[plane, row, col] = 1.0
         return tensor
 
     @staticmethod
@@ -73,9 +56,8 @@ class AbstractPolicyNetwork(AbstractNetwork):
             plane = AbstractPolicyNetwork.move_to_plane(
                 move.from_square, move.to_square, move.promotion
             )
-            if plane is not None:
-                row, col = divmod(move.from_square, 8)
-                tensor[plane, row, col] = 1.0
+            row, col = divmod(move.from_square, 8)
+            tensor[plane, row, col] = 1.0
         return tensor
 
     def get_masked_move_distribution(self, state):
