@@ -1,32 +1,29 @@
 import chess
+from collections import deque
 import torch
 from torch.utils.data import DataLoader, Dataset
+from tqdm import tqdm
 
 from engine.heuristics.simpleResNetPolicy import SimpleResNetPolicy
 from engine.values import DIRECTIONS, KNIGHTS_MOVES
 
 
 class PolicyBoardDataset(Dataset):
-    def __init__(self, board_conversion, move_conversion):
+    def __init__(self, board_conversion, move_conversion, max_size=1000):
         self.board_conversion = board_conversion
         self.move_conversion = move_conversion
-        self.data = []
+        self.buffer = deque(maxlen=max_size)
 
     def __len__(self):
-        return len(self.data)
+        return len(self.buffer)
 
     def add_pair(self, board, move):
-        self.data.append((board, move))
-
-    def clear(self):
-        self.data.clear()
+        self.buffer.append((board, move))
 
     def __getitem__(self, idx):
-        board, move = self.data[idx]
-
+        board, move = self.buffer[idx]
         board_tsr = self.board_conversion(board)
         y = self.move_conversion(move)
-
         return board_tsr, y
 
 
@@ -104,7 +101,7 @@ def main():
     loss_fn = torch.nn.BCELoss(reduction="sum")
     games = 100_000
     init_learning_rate = 1e-4
-    batch_size = 120
+    batch_size = 32
 
     dataset = PolicyBoardDataset(
         network_type.board_to_tensor, network_type.move_to_tensor
@@ -121,7 +118,7 @@ def main():
 
         network.model.train()
         total_loss = 0
-        for batch in train_loader:
+        for batch in tqdm(train_loader):
             optimizer.zero_grad()
             loss = process_batch(network, batch, loss_fn)
             total_loss += loss.item()
@@ -130,7 +127,6 @@ def main():
 
         print(f"Game: {game_id}\tTraining Loss: {total_loss / len(dataset)}")
 
-        dataset.clear()
         if game_id % 25 == 0:
             torch.save(network.model, output_filename)
 
