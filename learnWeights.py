@@ -82,7 +82,7 @@ def main():
         print(f"""
                 Epoch: {epoch}
                 Learning Rate: {scheduler.get_last_lr()[0]:.6f}
-                Avg. Training Loss: {total_loss / len(train_loader):.6f}
+                Avg. Training Loss: {total_loss / len(dataset)}
         """)
 
         network.model.eval()
@@ -93,7 +93,7 @@ def main():
                 test_loss += loss.item()
 
         print(f"""
-                Model test loss: {test_loss / len(test_loader):.4f}
+                Model test loss: {test_loss / len(testset)}
         """)
         torch.save(network.model, output_filename)
 
