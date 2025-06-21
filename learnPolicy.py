@@ -46,11 +46,11 @@ def main():
 
     data_filename = "data/MoveRand.txt"
     tests_filename = "data/MoveTest.txt"
-    output_filename = "models/new_sp.pt"
+    output_filename = "models/new_srnp.pt"
     loss_fn = torch.nn.BCELoss(reduction="sum")
     total_epochs = 100
     init_learning_rate = 1e-2
-    batch_size = 4096
+    batch_size = 32
 
     dataset = PolicyDataset(
         data_filename, network_type.board_to_tensor, network_type.move_to_tensor
