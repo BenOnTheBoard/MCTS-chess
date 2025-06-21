@@ -25,15 +25,17 @@ class PolicyDataset(Dataset):
 
         y = self.move_conversion(chess.Move.from_uci(move))
 
-        return line_tsr, y
+        return line_tsr, torch.tensor(y, dtype=torch.long)
 
 
 def process_batch(network, batch, loss_fn):
     board_tensor, targets = batch
-    board_tensor = board_tensor.to(torch.float32)
-    board_tensor = board_tensor.view(len(board_tensor), 11, 8, 8)
+    batch_size = len(board_tensor)
 
-    predictions = network.model(board_tensor)
+    board_tensor = board_tensor.to(torch.float32)
+    board_tensor = board_tensor.view(batch_size, 11, 8, 8)
+
+    predictions = network.model(board_tensor).view(batch_size, 4672)
     loss = loss_fn(predictions, targets)
 
     return loss
@@ -47,16 +49,16 @@ def main():
     data_filename = "data/MoveRand.txt"
     tests_filename = "data/MoveTest.txt"
     output_filename = "models/new_srnp.pt"
-    loss_fn = torch.nn.BCELoss(reduction="sum")
+    loss_fn = torch.nn.CrossEntropyLoss(reduction="sum")
     total_epochs = 100
     init_learning_rate = 1e-2
     batch_size = 32
 
     dataset = PolicyDataset(
-        data_filename, network_type.board_to_tensor, network_type.move_to_tensor
+        data_filename, network_type.board_to_tensor, network_type.move_to_flat_index
     )
     testset = PolicyDataset(
-        tests_filename, network_type.board_to_tensor, network_type.move_to_tensor
+        tests_filename, network_type.board_to_tensor, network_type.move_to_flat_index
     )
 
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)

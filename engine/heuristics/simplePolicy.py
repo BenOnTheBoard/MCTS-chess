@@ -2,14 +2,12 @@ import torch
 import torch.nn as nn
 
 from engine.heuristics.abstractPolicyNetwork import AbstractPolicyNetwork
-from engine.heuristics.modules import GlobalSoftmax
 
 
 class SimplePolicy(AbstractPolicyNetwork):
     def init_model(self):
         self.model = nn.Sequential(
             nn.Conv2d(11, 73, (3, 3), padding=1),
-            GlobalSoftmax(),
         )
 
     @staticmethod

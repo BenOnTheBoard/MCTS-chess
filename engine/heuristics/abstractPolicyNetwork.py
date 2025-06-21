@@ -1,5 +1,6 @@
 import chess
 import torch
+from torch.nn.functional import softmax
 
 from engine.heuristics.abstractNetwork import AbstractNetwork
 from engine.values import DIRECTIONS, KNIGHTS_MOVES
@@ -40,14 +41,12 @@ class AbstractPolicyNetwork(AbstractNetwork):
         return 64 + (promotion - 2) * 3 + 1 + col_diff
 
     @staticmethod
-    def move_to_tensor(move):
-        tensor = torch.zeros((73, 8, 8), dtype=torch.float32)
+    def move_to_flat_index(move):
         plane = AbstractPolicyNetwork.move_to_plane(
             move.from_square, move.to_square, move.promotion
         )
         row, col = divmod(move.from_square, 8)
-        tensor[plane, row, col] = 1.0
-        return tensor
+        return plane * 64 + row * 8 + col
 
     @staticmethod
     def board_to_legal_moves_mask(board):
@@ -62,6 +61,9 @@ class AbstractPolicyNetwork(AbstractNetwork):
 
     def get_masked_move_distribution(self, state):
         distribution = self.tensor_eval(state)
+        dist_shape = distribution.shape
+        dist_soft = softmax(distribution.view(-1), dim=0).view(dist_shape)
+
         mask = self.board_to_legal_moves_mask(state)
 
-        return distribution * mask
+        return dist_soft * mask

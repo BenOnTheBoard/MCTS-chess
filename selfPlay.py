@@ -9,7 +9,7 @@ from engine.values import DIRECTIONS, KNIGHTS_MOVES
 
 
 class PolicyBoardDataset(Dataset):
-    def __init__(self, board_conversion, move_conversion, max_size=1000):
+    def __init__(self, board_conversion, move_conversion, max_size=2048):
         self.board_conversion = board_conversion
         self.move_conversion = move_conversion
         self.buffer = deque(maxlen=max_size)
@@ -24,15 +24,17 @@ class PolicyBoardDataset(Dataset):
         board, move = self.buffer[idx]
         board_tsr = self.board_conversion(board)
         y = self.move_conversion(move)
-        return board_tsr, y
+        return board_tsr, torch.tensor(y, dtype=torch.long)
 
 
 def process_batch(network, batch, loss_fn):
     board_tensor, targets = batch
-    board_tensor = board_tensor.to(torch.float32)
-    board_tensor = board_tensor.view(len(board_tensor), 11, 8, 8)
+    batch_size = len(board_tensor)
 
-    predictions = network.model(board_tensor)
+    board_tensor = board_tensor.to(torch.float32)
+    board_tensor = board_tensor.view(batch_size, 11, 8, 8)
+
+    predictions = network.model(board_tensor).view(batch_size, 4672)
     loss = loss_fn(predictions, targets)
 
     return loss
@@ -98,13 +100,13 @@ def main():
     network = network_type(model=model)
 
     output_filename = "models/new_srnp.pt"
-    loss_fn = torch.nn.BCELoss(reduction="sum")
+    loss_fn = torch.nn.CrossEntropyLoss(reduction="sum")
     games = 100_000
-    init_learning_rate = 1e-4
+    init_learning_rate = 1e-3
     batch_size = 32
 
     dataset = PolicyBoardDataset(
-        network_type.board_to_tensor, network_type.move_to_tensor
+        network_type.board_to_tensor, network_type.move_to_flat_index
     )
 
     optimizer = torch.optim.Adam(network.model.parameters(), lr=init_learning_rate)

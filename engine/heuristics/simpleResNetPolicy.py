@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from engine.heuristics.abstractPolicyNetwork import AbstractPolicyNetwork
-from engine.heuristics.modules import GlobalSoftmax, ResidualBlock
+from engine.heuristics.modules import ResidualBlock
 
 
 class SimpleResNetPolicy(AbstractPolicyNetwork):
@@ -12,7 +12,6 @@ class SimpleResNetPolicy(AbstractPolicyNetwork):
             ResidualBlock(16, 32),
             ResidualBlock(32, 64),
             nn.Conv2d(64, 73, kernel_size=1, bias=False),
-            GlobalSoftmax(),
         )
 
     @staticmethod
