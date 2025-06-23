@@ -1,5 +1,5 @@
 class EvaluatorInterface:
-    def evaluate(self, child, node, state):
+    def evaluate(self, child, node):
         """
         Return a value given a child node.
         """
