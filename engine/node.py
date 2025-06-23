@@ -1,8 +1,9 @@
 class Node:
-    def __init__(self, move, turn, parent):
+    def __init__(self, move, turn, prior, parent):
         self.move = move
         self.turn = turn
         self.parent = parent
+        self.prior = prior
         self.children = None
         self.quality = 0
         self.visits = 0
