@@ -9,7 +9,7 @@ PIECE_VALUES = {
     chess.KING: 10_000,
 }
 
-OUTCOMES = {chess.WHITE: 1, chess.BLACK: 0, None: 0.5}
+OUTCOMES = {chess.WHITE: 1, chess.BLACK: -1, None: 0}
 
 DIRECTIONS = (
     (-1, 0),  # S, e4 is 2N
