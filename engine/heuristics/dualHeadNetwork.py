@@ -19,10 +19,10 @@ class DualHeadNetwork(AbstractPolicyNetwork):
         outcome = state.outcome()
         if outcome is not None:
             winner = outcome.winner
-            return OUTCOMES[winner]
+            return OUTCOMES[winner], None
 
-        output_vector = self.tensor_eval(state)
-        return output_vector
+        output_pair = self.tensor_eval(state)
+        return output_pair
 
 
 class DualHeadModule(nn.Module):
@@ -33,7 +33,7 @@ class DualHeadModule(nn.Module):
             nn.Conv2d(11, 16, kernel_size=3, padding=1),
             ResidualBlock(16, 32),
             ResidualBlock(32, 64),
-        )  # 8x8x64
+        )  # 64x8x8
 
         self.value_head = nn.Sequential(
             nn.Conv2d(64, 1, kernel_size=1),
