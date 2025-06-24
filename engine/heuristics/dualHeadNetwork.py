@@ -21,8 +21,8 @@ class DualHeadNetwork(AbstractPolicyNetwork):
             winner = outcome.winner
             return OUTCOMES[winner], None
 
-        output_pair = self.tensor_eval(state)
-        return output_pair
+        value, policy = self.tensor_eval(state)
+        return value.item(), policy
 
 
 class DualHeadModule(nn.Module):
