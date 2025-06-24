@@ -10,18 +10,18 @@ class MCTS:
         self,
         position,
         tree_evaluator,
-        rollout_heuristic,
+        network,
         backpropagation_rule,
     ):
         self.tree_evaluator = tree_evaluator
-        self.rollout_heuristic = rollout_heuristic
+        self.network = network
         self.backpropagation_rule = backpropagation_rule
         self.LRUCache = LRUCache(maxsize=100_000)
 
         self.set_position(position)
 
     def set_position(self, new_position):
-        self.root_node = Node(None, new_position.turn, None)
+        self.root_node = Node(None, new_position.turn, None, None)
         self.position = new_position.copy()
 
     def add_move(self, move):
@@ -34,11 +34,11 @@ class MCTS:
                     found_child = True
                     break
         if not found_child:
-            self.root_node = Node(None, not self.root_node.turn, None)
+            self.root_node = Node(None, not self.root_node.turn, None, None)
 
         self.position.push(move)
 
-    def tree_policy(self, node, state):
+    def tree_policy(self, node):
         if node.is_leaf():
             return node
 
@@ -52,7 +52,7 @@ class MCTS:
             if child.visits == 0:
                 return child
 
-            child_value = self.tree_evaluator.evaluate(child, node, state)
+            child_value = self.tree_evaluator.evaluate(child, node)
 
             if node.turn:
                 if child_value > best_value:
@@ -65,12 +65,23 @@ class MCTS:
 
         return best_node
 
+    def expand_node(self, node, state, move_distribution):
+        flat_dist = move_distribution.flatten()
+        if node.children is None and state.outcome(claim_draw=True) is None:
+            node.children = []
+            for move in state.legal_moves:
+                move_idx = self.network.move_to_flat_index(move)
+                prior = flat_dist[move_idx]
+                node.children.append(Node(move, not node.turn, prior, node))
+
     def evaluate_state(self, state):
-        result = self.LRUCache.get(state)
-        if result is None:
-            result = self.rollout_heuristic.evaluate(state)
-            self.LRUCache.put(state, result)
-        return result
+        cached_pair = self.LRUCache.get(state)
+        if cached_pair is not None:
+            return cached_pair
+
+        eval_pair = self.network.evaluate(state)
+        self.LRUCache.put(state, eval_pair)
+        return eval_pair
 
     def propagate_updates(self, node, value):
         while node.has_parent():
@@ -91,16 +102,12 @@ class MCTS:
             node, state = self.root_node, self.position.copy(stack=False)
 
             while not node.is_leaf():
-                node = self.tree_policy(node, state)
+                node = self.tree_policy(node)
                 state.push(node.move)
 
-            node.expand_node(state)
+            result, move_distribution = self.evaluate_state(state)
 
-            if not node.is_leaf():
-                node = self.tree_policy(node, state)
-                state.push(node.move)
-
-            result = self.evaluate_state(state)
+            self.expand_node(node, state, move_distribution)
             self.propagate_updates(node, result)
 
         return get_best_move(self.root_node)
