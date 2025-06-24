@@ -66,13 +66,13 @@ class MCTS:
         return best_node
 
     def expand_node(self, node, state, move_distribution):
-        flat_dist = move_distribution.flatten()
         if node.children is None and state.outcome(claim_draw=True) is None:
+            flat_dist = move_distribution.flatten()
             node.children = []
             for move in state.legal_moves:
                 move_idx = self.network.move_to_flat_index(move)
                 prior = flat_dist[move_idx]
-                node.children.append(Node(move, not node.turn, prior, node))
+                node.children.append(Node(move, not node.turn, prior.item(), node))
 
     def evaluate_state(self, state):
         cached_pair = self.LRUCache.get(state)
