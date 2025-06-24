@@ -5,30 +5,30 @@ from tqdm import tqdm
 from multiprocessing import Pool, cpu_count
 import os
 
-RAND_START_DEPTH = 6
-SF_SEARCH_DEPTH = 10
+SF_SEARCH_DEPTH = 8
 MAX_PLIES = 150
+GAMES = 32_000
 STOCKFISH_PATH = r"stockfish\stockfish-windows-x86-64-avx2.exe"
-DATA_FILENAME = "data/LesserTDTesting.txt"
+DATA_FILENAME = "data/DHRand.txt"
 
 
 def sf_analysis(engine, board):
     if not board.is_game_over():
-        eval_dict = engine.analyse(board, chess.engine.Limit(depth=SF_SEARCH_DEPTH))
-        sf_eval = eval_dict["score"].white().score()
-        if sf_eval is not None:
-            return f"{board.fen()}, {sf_eval}\n"
+        result = engine.analyse(board, chess.engine.Limit(depth=SF_SEARCH_DEPTH))
+        best_move = result["pv"][0]
+        score = result["score"].white().score(mate_score=60_000)
+        return f"{board.fen()},{best_move},{score}\n"
     return None
 
 
 def generate_single_game(engine):
     board = chess.Board()
     lines = []
-    while not board.is_game_over() and board.ply() < MAX_PLIES:
+    while not board.is_game_over(claim_draw=True) and board.ply() < MAX_PLIES:
         rand_move = choice(list(board.legal_moves))
         board.push(rand_move)
         line = sf_analysis(engine, board)
-        if line:
+        if line is not None:
             lines.append(line)
     return lines
 
@@ -61,4 +61,4 @@ def parallel_generate(total_games, n_workers=None):
 
 
 if __name__ == "__main__":
-    parallel_generate(2_000)
+    parallel_generate(GAMES, 6)
