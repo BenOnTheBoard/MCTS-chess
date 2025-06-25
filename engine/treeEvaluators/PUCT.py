@@ -8,7 +8,7 @@ class PUCT(EvaluatorInterface):
         self.C = C
 
     def evaluate(self, child, node):
-        exploring_term = child.prior * self.C * sqrt(log(node.visits) / child.visits)
+        exploring_term = child.prior * self.C * sqrt(node.visits) / (child.visits + 1)
 
         if node.turn:
             return child.quality + exploring_term
