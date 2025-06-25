@@ -6,9 +6,7 @@ from tqdm import tqdm
 
 from engine.mcts import MCTS
 from engine.treeEvaluators.UCT import UCT
-from engine.treeEvaluators.captureUCT import CaptureUCT
 from engine.backpropagationRules.meanChild import MeanChild
-from engine.utils import node_comparator
 from engine.values import OUTCOMES
 
 
@@ -23,7 +21,7 @@ def print_principal_variation(mcts):
     node = mcts.root_node
     moves = []
     while not node.is_leaf():
-        node.children.sort(key=node_comparator)
+        node.children.sort(key=node.visits)
         if node.turn:
             node = node.children[-1]
         else:
@@ -118,7 +116,7 @@ def main():
     player_one_config = (
         "models/new_delta.pt",
         None,
-        CaptureUCT(1.5, 0.15),
+        UCT(1.5),
         MeanChild(),
     )
     player_two_config = (

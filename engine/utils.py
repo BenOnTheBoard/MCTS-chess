@@ -26,15 +26,6 @@ def material_balance(piece_map):
     return 1 / (1 + math.exp(-diff / 200))
 
 
-def node_comparator(node):
-    if node.visits == 0:
-        return 0.5
-    return node.quality
-
-
 def get_best_move(node):
-    node.children.sort(key=node_comparator)
-    if node.turn:
-        return node.children[-1].move
-    else:
-        return node.children[0].move
+    node.children.sort(key=lambda n: n.visits)
+    return node.children[-1].move
