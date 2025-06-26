@@ -33,6 +33,8 @@ class DualHeadModule(nn.Module):
             nn.Conv2d(11, 16, kernel_size=3, padding=1),
             ResidualBlock(16, 32),
             ResidualBlock(32, 64),
+            ResidualBlock(64, 64),
+            ResidualBlock(64, 64),
         )  # 64x8x8
 
         self.value_head = nn.Sequential(
@@ -47,7 +49,10 @@ class DualHeadModule(nn.Module):
         )
 
         self.policy_head = nn.Sequential(
-            nn.Conv2d(64, 73, kernel_size=1),
+            nn.Conv2d(64, 128, kernel_size=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+            nn.Conv2d(128, 73, kernel_size=1),
         )
 
     def forward(self, x):

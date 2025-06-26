@@ -21,10 +21,14 @@ class ResidualBlock(nn.Module):
             out_channels, out_channels, kernel_size=3, padding=1, bias=False
         )
         self.bn2 = nn.BatchNorm2d(out_channels)
-        self.shortcut = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size=1, bias=False),
-            nn.BatchNorm2d(out_channels),
-        )
+
+        if in_channels == out_channels:
+            self.shortcut = nn.Identity()
+        else:
+            self.shortcut = nn.Sequential(
+                nn.Conv2d(in_channels, out_channels, kernel_size=1, bias=False),
+                nn.BatchNorm2d(out_channels),
+            )
 
     def forward(self, x):
         out = self.bn1(self.conv1(x))
