@@ -1,3 +1,4 @@
+from bulletchess import CHECKMATE, DRAW
 import torch
 import torch.nn as nn
 
@@ -16,10 +17,10 @@ class DualHeadNetwork(AbstractPolicyNetwork):
         return tensor.view(1, 11, 8, 8)
 
     def evaluate(self, state):
-        outcome = state.outcome()
-        if outcome is not None:
-            winner = outcome.winner
-            return OUTCOMES[winner], None
+        if state in CHECKMATE:
+            return -OUTCOMES[state.turn], None
+        if state in DRAW:
+            return OUTCOMES[None], None
 
         value, policy = self.tensor_eval(state)
         return value.item(), policy

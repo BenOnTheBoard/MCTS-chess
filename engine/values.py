@@ -1,15 +1,19 @@
-import chess
+import bulletchess
 
 PIECE_VALUES = {
-    chess.PAWN: 100,
-    chess.KNIGHT: 305,
-    chess.BISHOP: 333,
-    chess.ROOK: 563,
-    chess.QUEEN: 950,
-    chess.KING: 10_000,
+    bulletchess.PAWN: 100,
+    bulletchess.KNIGHT: 305,
+    bulletchess.BISHOP: 333,
+    bulletchess.ROOK: 563,
+    bulletchess.QUEEN: 950,
+    bulletchess.KING: 10_000,
 }
 
-OUTCOMES = {chess.WHITE: 1, chess.BLACK: -1, None: 0}
+OUTCOMES = {
+    bulletchess.WHITE: 1,
+    bulletchess.BLACK: -1,
+    None: 0,
+}
 
 DIRECTIONS = (
     (-1, 0),  # S, e4 is 2N

@@ -1,3 +1,4 @@
+from bulletchess import CHECKMATE, DRAW
 from tqdm import tqdm
 
 from engine.node import Node
@@ -36,7 +37,7 @@ class MCTS:
         if not found_child:
             self.root_node = Node(None, not self.root_node.turn, None, None)
 
-        self.position.push(move)
+        self.position.apply(move)
 
     def tree_policy(self, node):
         if node.is_leaf():
@@ -66,13 +67,17 @@ class MCTS:
         return best_node
 
     def expand_node(self, node, state, move_distribution):
-        if node.children is None and state.outcome(claim_draw=True) is None:
-            flat_dist = move_distribution.flatten()
-            node.children = []
-            for move in state.legal_moves:
-                move_idx = self.network.move_to_flat_index(move)
-                prior = flat_dist[move_idx]
-                node.children.append(Node(move, not node.turn, prior.item(), node))
+        if node.children is not None:
+            return
+        if state in CHECKMATE or state in DRAW:
+            return
+
+        flat_dist = move_distribution.flatten()
+        node.children = []
+        for move in state.legal_moves():
+            move_idx = self.network.move_to_flat_index(move)
+            prior = flat_dist[move_idx]
+            node.children.append(Node(move, not node.turn, prior.item(), node))
 
     def evaluate_state(self, state):
         cached_pair = self.LRUCache.get(state)
@@ -99,11 +104,11 @@ class MCTS:
             counter = range(node_count)
 
         for _ in counter:
-            node, state = self.root_node, self.position.copy(stack=False)
+            node, state = self.root_node, self.position.copy()
 
             while not node.is_leaf():
                 node = self.tree_policy(node)
-                state.push(node.move)
+                state.apply(node.move)
 
             result, move_distribution = self.evaluate_state(state)
 

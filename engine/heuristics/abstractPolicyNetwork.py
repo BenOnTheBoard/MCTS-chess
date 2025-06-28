@@ -1,4 +1,4 @@
-import chess
+from bulletchess import QUEEN, SQUARES
 import torch
 from torch.nn.functional import softmax
 
@@ -9,12 +9,12 @@ from engine.values import DIRECTIONS, KNIGHTS_MOVES
 class AbstractPolicyNetwork(AbstractNetwork):
     @staticmethod
     def move_to_plane(from_square, to_square, promotion=None):
-        from_row, from_col = divmod(from_square, 8)
-        to_row, to_col = divmod(to_square, 8)
+        from_row, from_col = divmod(SQUARES.index(from_square), 8)
+        to_row, to_col = divmod(SQUARES.index(to_square), 8)
         row_diff = to_row - from_row
         col_diff = to_col - from_col
 
-        if promotion is None or promotion == chess.QUEEN:
+        if promotion is None or promotion == QUEEN:
             row_diff_sgn = (row_diff > 0) - (row_diff < 0)
             col_diff_sgn = (col_diff > 0) - (col_diff < 0)
 
@@ -43,9 +43,9 @@ class AbstractPolicyNetwork(AbstractNetwork):
     @staticmethod
     def move_to_flat_index(move):
         plane = AbstractPolicyNetwork.move_to_plane(
-            move.from_square, move.to_square, move.promotion
+            move.origin, move.destination, move.promotion
         )
-        row, col = divmod(move.from_square, 8)
+        row, col = divmod(SQUARES.index(move.origin), 8)
         return plane * 64 + row * 8 + col
 
     @staticmethod

@@ -1,4 +1,4 @@
-import chess
+import bulletchess
 import torch
 from math import tanh
 from numpy import float16
@@ -25,8 +25,8 @@ class PolicyValueDataset(Dataset):
 
     def __getitem__(self, idx):
         fen, value, move_str = self.data[idx]
-        line_state = chess.Board(fen=fen)
-        move = chess.Move.from_uci(move_str)
+        line_state = bulletchess.Board(fen=fen)
+        move = bulletchess.Move.from_uci(move_str)
 
         board_tsr = self.board_conversion(line_state)
         value = torch.tensor(value, dtype=torch.float32)

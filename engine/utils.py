@@ -1,4 +1,4 @@
-import chess
+import bulletchess
 import math
 
 from engine.values import PIECE_VALUES
@@ -6,7 +6,7 @@ from engine.values import PIECE_VALUES
 
 def captured_piece(state, move):
     if state.is_en_passant(move):
-        return chess.PAWN
+        return bulletchess.PAWN
     else:
         return state.piece_at(move.to_square).piece_type
 

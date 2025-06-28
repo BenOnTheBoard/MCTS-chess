@@ -1,5 +1,4 @@
 from collections import OrderedDict
-from chess.polyglot import zobrist_hash
 
 
 class LRUCache:
@@ -8,14 +7,14 @@ class LRUCache:
         self.maxsize = maxsize
 
     def get(self, state):
-        key = zobrist_hash(state)
+        key = state.__hash__()
         if key in self.cache:
             self.cache.move_to_end(key)
             return self.cache[key]
         return None
 
     def put(self, state, value):
-        key = zobrist_hash(state)
+        key = state.__hash__()
         if key in self.cache:
             self.cache.move_to_end(key)
         self.cache[key] = value
@@ -23,7 +22,7 @@ class LRUCache:
             self.cache.popitem(last=False)
 
     def invalidate(self, state):
-        key = zobrist_hash(state)
+        key = state.__hash__()
         self.cache.pop(key)
 
     def clear(self):
