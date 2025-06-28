@@ -1,6 +1,7 @@
 import chess
 import torch
 from math import tanh
+from numpy import float16
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
@@ -15,17 +16,17 @@ class PolicyValueDataset(Dataset):
         self.data = []
         with open(filename, "r") as file:
             for line in tqdm(file.readlines(), desc="Initial data processing"):
-                fen, move_str, value_str = line.strip().split(",")
-                value = tanh(int(value_str))
-                move = chess.Move.from_uci(move_str)
+                fen, move, value_str = line.strip().split(",")
+                value = float16(tanh(int(value_str)))
                 self.data.append((fen, value, move))
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
-        fen, value, move = self.data[idx]
+        fen, value, move_str = self.data[idx]
         line_state = chess.Board(fen=fen)
+        move = chess.Move.from_uci(move_str)
 
         board_tsr = self.board_conversion(line_state)
         value = torch.tensor(value, dtype=torch.float32)
@@ -38,8 +39,10 @@ def process_batch(network, batch, value_loss_fn, policy_loss_fn):
     board_tensor, target_values, target_moves = batch
     batch_size = len(board_tensor)
 
-    board_tensor = board_tensor.to(torch.float32)
+    board_tensor = board_tensor.to(device="xpu", dtype=torch.float32)
     board_tensor = board_tensor.view(batch_size, 11, 8, 8)
+    target_values = target_values.to("xpu")
+    target_moves = target_moves.to("xpu")
 
     predicted_values, predicted_moves = network.model(board_tensor)
     predicted_moves = predicted_moves.view(batch_size, 4672)
@@ -48,13 +51,14 @@ def process_batch(network, batch, value_loss_fn, policy_loss_fn):
     value_loss = value_loss_fn(predicted_values, target_values)
     policy_loss = policy_loss_fn(predicted_moves, target_moves)
 
-    return value_loss, policy_loss
+    return value_loss.to("cpu"), policy_loss.to("cpu")
 
 
 def main():
     model = None
     network_type = DualHeadNetwork
     network = network_type(model=model)
+    network.model = network.model.to("xpu")
 
     data_filename = "data/DHRand.txt"
     tests_filename = "data/DHTest.txt"
@@ -62,8 +66,8 @@ def main():
     value_loss_fn = torch.nn.MSELoss(reduction="sum")
     policy_loss_fn = torch.nn.CrossEntropyLoss(reduction="sum")
     total_epochs = 100
-    init_learning_rate = 1e-3
-    batch_size = 64
+    init_learning_rate = 1e-4
+    batch_size = 128
 
     dataset = PolicyValueDataset(
         data_filename, network_type.board_to_tensor, network_type.move_to_flat_index
