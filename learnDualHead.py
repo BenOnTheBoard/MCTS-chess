@@ -25,7 +25,7 @@ class PolicyValueDataset(Dataset):
 
     def __getitem__(self, idx):
         fen, value, move_str = self.data[idx]
-        line_state = bulletchess.Board(fen=fen)
+        line_state = bulletchess.Board.from_fen(fen)
         move = bulletchess.Move.from_uci(move_str)
 
         board_tsr = self.board_conversion(line_state)
