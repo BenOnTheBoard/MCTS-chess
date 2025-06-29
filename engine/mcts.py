@@ -40,26 +40,22 @@ class MCTS:
         self.position.apply(move)
 
     def tree_policy(self, node):
-        if node.is_leaf():
-            return node
-
-        if node.turn:
-            best_value = -float("inf")
-        else:
-            best_value = float("inf")
-        best_node = None
-
         for child in node.children:
             if child.visits == 0:
                 return child
 
-            child_value = self.tree_evaluator.evaluate(child, node)
-
-            if node.turn:
+        best_node = None
+        if node.turn:
+            best_value = -float("inf")
+            for child in node.children:
+                child_value = self.tree_evaluator.evaluate(child, node)
                 if child_value > best_value:
                     best_value = child_value
                     best_node = child
-            else:
+        else:
+            best_value = float("inf")
+            for child in node.children:
+                child_value = self.tree_evaluator.evaluate(child, node)
                 if child_value < best_value:
                     best_value = child_value
                     best_node = child
