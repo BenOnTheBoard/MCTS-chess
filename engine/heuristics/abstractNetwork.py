@@ -1,5 +1,17 @@
 import bulletchess
-from bulletchess import BLACK, WHITE, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING, SQUARES
+from bulletchess import (
+    CHECKMATE,
+    DRAW,
+    BLACK,
+    WHITE,
+    PAWN,
+    KNIGHT,
+    BISHOP,
+    ROOK,
+    QUEEN,
+    KING,
+    SQUARES,
+)
 import torch
 
 from engine.heuristics.heuristicInterface import HeuristicInterface
@@ -61,10 +73,10 @@ class AbstractNetwork(HeuristicInterface):
         return output_vector
 
     def evaluate(self, state):
-        outcome = state.outcome()
-        if outcome is not None:
-            winner = outcome.winner
-            return OUTCOMES[winner]
+        if state in CHECKMATE:
+            return -OUTCOMES[state.turn], None
+        if state in DRAW:
+            return OUTCOMES[None], None
 
         output_vector = self.tensor_eval(state)
         return output_vector.item()
