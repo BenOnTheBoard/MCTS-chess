@@ -63,7 +63,7 @@ class MCTS:
         return best_node
 
     def expand_node(self, node, state, move_distribution):
-        if node.children is not None:
+        if node.children is not None or move_distribution is None:
             return
         if state in CHECKMATE or state in DRAW:
             return
