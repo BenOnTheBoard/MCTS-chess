@@ -52,11 +52,11 @@ class AbstractPolicyNetwork(AbstractNetwork):
     @staticmethod
     def board_to_legal_moves_mask(board):
         tensor = torch.zeros((73, 8, 8), dtype=torch.float32)
-        for move in board.legal_moves:
+        for move in board.legal_moves():
             plane = AbstractPolicyNetwork.move_to_plane(
-                move.from_square, move.to_square, move.promotion
+                move.origin, move.destination, move.promotion
             )
-            row, col = divmod(move.from_square, 8)
+            row, col = divmod(SQUARES.index(move.origin), 8)
             tensor[plane, row, col] = 1.0
         return tensor
 
