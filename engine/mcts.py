@@ -1,4 +1,4 @@
-from bulletchess import CHECKMATE, DRAW
+from bulletchess import CHECKMATE, DRAW, WHITE, BLACK
 from tqdm import tqdm
 
 from engine.node import Node
@@ -35,7 +35,10 @@ class MCTS:
                     found_child = True
                     break
         if not found_child:
-            self.root_node = Node(None, not self.root_node.turn, None, None)
+            if self.root_node.turn is WHITE:
+                self.root_node = Node(None, BLACK, None, None)
+            else:
+                self.root_node = Node(None, WHITE, None, None)
 
         self.position.apply(move)
 
@@ -45,7 +48,7 @@ class MCTS:
                 return child
 
         best_node = None
-        if node.turn:
+        if node.turn is WHITE:
             best_value = -float("inf")
             for child in node.children:
                 child_value = self.tree_evaluator.evaluate(child, node)
@@ -59,6 +62,9 @@ class MCTS:
                 if child_value < best_value:
                     best_value = child_value
                     best_node = child
+                print(child_value, best_value)
+                print(child.move, best_node.move)
+                quit()
 
         return best_node
 
@@ -73,7 +79,13 @@ class MCTS:
         for move in state.legal_moves():
             move_idx = self.network.move_to_flat_index(move)
             prior = flat_dist[move_idx]
-            node.children.append(Node(move, not node.turn, prior.item(), node))
+
+            if node.turn is WHITE:
+                child_turn = BLACK
+            else:
+                child_turn = WHITE
+
+            node.children.append(Node(move, child_turn, prior.item(), node))
 
     def evaluate_state(self, state):
         cached_pair = self.LRUCache.get(state)

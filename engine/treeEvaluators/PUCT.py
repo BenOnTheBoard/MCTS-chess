@@ -1,3 +1,4 @@
+from bulletchess import WHITE
 from math import exp, log, sqrt
 
 from engine.treeEvaluators.evaluatorInterface import EvaluatorInterface
@@ -15,7 +16,7 @@ class PUCT(EvaluatorInterface):
         prior_factor = 2 * (1 + exp(-child.prior))
         prior_term = prior_factor * sqrt(log(node.visits) / node.visits)
 
-        if node.turn:
+        if node.turn is WHITE:
             return child.quality + exploring_term - prior_term
         else:
             return child.quality - exploring_term + prior_term

@@ -1,3 +1,4 @@
+from bulletchess import WHITE
 from math import exp
 
 from engine.backpropagationRules.ruleInterface import RuleInterface
@@ -9,7 +10,7 @@ class ApproxSoftMax(RuleInterface):
 
     def calculate(self, node, value):
         diff = value - node.quality
-        if node.turn:
+        if node.turn is WHITE:
             weight = exp(-self.w * diff)  # softmax
         else:
             weight = exp(self.w * diff)  # softmin
