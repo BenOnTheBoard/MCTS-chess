@@ -62,9 +62,6 @@ class MCTS:
                 if child_value < best_value:
                     best_value = child_value
                     best_node = child
-                print(child_value, best_value)
-                print(child.move, best_node.move)
-                quit()
 
         return best_node
 
