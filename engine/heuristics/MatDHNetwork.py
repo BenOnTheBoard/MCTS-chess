@@ -43,29 +43,26 @@ class MaterialDualHeadModule(nn.Module):
         self.body = nn.Sequential(
             nn.Conv2d(11, 16, kernel_size=3, padding=1),
             ResidualBlock(16, 32),
-            ResidualBlock(32, 64),
-            ResidualBlock(64, 64),
+            ResidualBlock(32, 32),
+            ResidualBlock(32, 32),
         )  # 64x8x8
 
         self.value_phase_one = nn.Sequential(
-            nn.Conv2d(64, 1, kernel_size=1),
+            nn.Conv2d(32, 1, kernel_size=1),
             nn.BatchNorm2d(1),
             nn.ReLU(),
             nn.Flatten(),
         )
 
         self.value_phase_two = nn.Sequential(
-            nn.Linear(69, 256),
+            nn.Linear(69, 64),
             nn.ReLU(),
-            nn.Linear(256, 1),
+            nn.Linear(64, 1),
             nn.Tanh(),
         )
 
         self.policy_head = nn.Sequential(
-            nn.Conv2d(64, 128, kernel_size=1),
-            nn.BatchNorm2d(128),
-            nn.ReLU(),
-            nn.Conv2d(128, 73, kernel_size=1),
+            nn.Conv2d(32, 73, kernel_size=1),
         )
 
     def forward(self, x):
