@@ -50,8 +50,9 @@ def process_batch(network, batch, value_loss_fn, policy_loss_fn):
 
     value_loss = value_loss_fn(predicted_values, target_values)
     policy_loss = policy_loss_fn(predicted_moves, target_moves)
+    composite_loss = value_loss + policy_loss
 
-    return value_loss.to("cpu"), policy_loss.to("cpu")
+    return composite_loss, value_loss.detach(), policy_loss.detach()
 
 
 def main():
@@ -76,8 +77,22 @@ def main():
         tests_filename, network_type.board_to_tensor, network_type.move_to_flat_index
     )
 
-    train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False)
+    train_loader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=6,
+        persistent_workers=True,
+        pin_memory=True,
+    )
+    test_loader = DataLoader(
+        testset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=6,
+        persistent_workers=True,
+        pin_memory=True,
+    )
 
     optimizer = torch.optim.Adam(network.model.parameters(), lr=init_learning_rate)
     scheduler = CosineAnnealingLR(optimizer, T_max=total_epochs)
@@ -88,12 +103,11 @@ def main():
         total_policy_loss = 0
         for batch in tqdm(train_loader):
             optimizer.zero_grad()
-            value_loss, policy_loss = process_batch(
+            composite_loss, value_loss, policy_loss = process_batch(
                 network, batch, value_loss_fn, policy_loss_fn
             )
             total_value_loss += value_loss.item()
             total_policy_loss += policy_loss.item()
-            composite_loss = value_loss + policy_loss
             composite_loss.backward()
             optimizer.step()
 
@@ -111,15 +125,15 @@ def main():
         total_policy_loss = 0
         with torch.no_grad():
             for batch in test_loader:
-                value_loss, policy_loss = process_batch(
+                _, value_loss, policy_loss = process_batch(
                     network, batch, value_loss_fn, policy_loss_fn
                 )
                 total_value_loss += value_loss.item()
                 total_policy_loss += policy_loss.item()
 
         print(f"""
-                Value Head Test Loss: {total_value_loss / len(dataset)}
-                Policy Head Test Loss: {total_policy_loss / len(dataset)}
+                Value Head Test Loss: {total_value_loss / len(testset)}
+                Policy Head Test Loss: {total_policy_loss / len(testset)}
         """)
         torch.save(network.model, output_filename)
 
