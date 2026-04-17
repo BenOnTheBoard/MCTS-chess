@@ -1,33 +1,33 @@
 import chess
-import chess.engine
+from chess import engine
 from random import choice
 from tqdm import tqdm
 from multiprocessing import Pool, cpu_count
 import os
 
-SF_SEARCH_DEPTH = 8
+SF_SEARCH_DEPTH = 10
 MAX_PLIES = 150
 GAMES = 32_000
 STOCKFISH_PATH = r"stockfish\stockfish-windows-x86-64-avx2.exe"
 DATA_FILENAME = "data/DHRand.txt"
 
 
-def sf_analysis(engine, board):
+def sf_analysis(SF, board):
     if not board.is_game_over():
-        result = engine.analyse(board, chess.engine.Limit(depth=SF_SEARCH_DEPTH))
+        result = SF.analyse(board, engine.Limit(depth=SF_SEARCH_DEPTH))
         best_move = result["pv"][0]
         score = result["score"].white().score(mate_score=60_000)
         return f"{board.fen()},{best_move},{score}\n"
     return None
 
 
-def generate_single_game(engine):
+def generate_single_game(SF):
     board = chess.Board()
     lines = []
     while not board.is_game_over(claim_draw=True) and board.ply() < MAX_PLIES:
         rand_move = choice(list(board.legal_moves))
         board.push(rand_move)
-        line = sf_analysis(engine, board)
+        line = sf_analysis(SF, board)
         if line is not None:
             lines.append(line)
     return lines
@@ -35,10 +35,12 @@ def generate_single_game(engine):
 
 def worker(args):
     games, stockfish_path, temp_filename = args
-    with chess.engine.SimpleEngine.popen_uci(stockfish_path) as engine:
+    with chess.engine.SimpleEngine.popen_uci(stockfish_path) as SF:
         with open(temp_filename, "w") as f:
-            for _ in range(games):
-                for line in generate_single_game(engine):
+            for i in range(games):
+                if i % 100 == 0:
+                    print(f"{os.getpid()}: {i}")
+                for line in generate_single_game(SF):
                     f.write(line)
 
 
@@ -61,4 +63,4 @@ def parallel_generate(total_games, n_workers=None):
 
 
 if __name__ == "__main__":
-    parallel_generate(GAMES, 6)
+    parallel_generate(GAMES, 12)
