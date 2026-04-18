@@ -47,21 +47,18 @@ class MCTS:
             if child.visits == 0:
                 return child
 
-        best_node = None
         if node.turn is WHITE:
-            best_value = -float("inf")
-            for child in node.children:
-                child_value = self.tree_evaluator.evaluate(child, node)
-                if child_value > best_value:
-                    best_value = child_value
-                    best_node = child
+            sign = -1
         else:
-            best_value = float("inf")
-            for child in node.children:
-                child_value = self.tree_evaluator.evaluate(child, node)
-                if child_value < best_value:
-                    best_value = child_value
-                    best_node = child
+            sign = 1
+
+        best_node = None
+        best_value = sign * float("inf")
+        for child in node.children:
+            child_value = self.tree_evaluator.evaluate(child, node)
+            if sign * child_value < sign * best_value:
+                best_value = child_value
+                best_node = child
 
         return best_node
 
