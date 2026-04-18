@@ -71,18 +71,21 @@ class MCTS:
         if state in CHECKMATE or state in DRAW:
             return
 
+        if node.turn is WHITE:
+            child_turn = BLACK
+        else:
+            child_turn = WHITE
+
         flat_dist = move_distribution.flatten()
-        node.children = []
-        for move in state.legal_moves():
-            move_idx = self.network.move_to_flat_index(move)
-            prior = flat_dist[move_idx]
-
-            if node.turn is WHITE:
-                child_turn = BLACK
-            else:
-                child_turn = WHITE
-
-            node.children.append(Node(move, child_turn, prior.item(), node))
+        node.children = [
+            Node(
+                move,
+                child_turn,
+                flat_dist[self.network.move_to_flat_index(move)].item(),
+                node,
+            )
+            for move in state.legal_moves()
+        ]
 
     def evaluate_state(self, state):
         cached_pair = self.LRUCache.get(state)
