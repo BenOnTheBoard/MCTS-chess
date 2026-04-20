@@ -17,7 +17,7 @@ class MCTS:
         self.tree_evaluator = tree_evaluator
         self.network = network
         self.backpropagation_rule = backpropagation_rule
-        self.LRUCache = LRUCache(maxsize=100_000)
+        self.LRUCache = LRUCache(maxsize=50_000)
 
         self.set_position(position)
 

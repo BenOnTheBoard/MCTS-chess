@@ -33,14 +33,14 @@ def pprint_principal_variation(node, limit=1_000):
 def main():
     model = torch.load("models/mat_dhn.pt", weights_only=False, map_location="cpu")
     network = MaterialDualHeadNetwork(model)
-    NODE_LIMIT = 10_000
+    NODE_LIMIT = 50_000
 
     board = bulletchess.Board.from_fen(
-        "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2"
+        "r2q1rk1/pp1bppbp/2np1np1/8/2BNP3/2N1BP2/PPPQ2PP/2KR3R b - - 6 10"
     )
     mcts = MCTS(
         board,
-        AlphaPUCT(1.225),
+        AlphaPUCT(2),
         network,
         MeanChild(),
     )
