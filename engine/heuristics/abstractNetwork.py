@@ -1,4 +1,3 @@
-import bulletchess
 from bulletchess import (
     CHECKMATE,
     DRAW,
@@ -11,6 +10,10 @@ from bulletchess import (
     QUEEN,
     KING,
     SQUARES,
+    BLACK_KINGSIDE,
+    BLACK_QUEENSIDE,
+    WHITE_KINGSIDE,
+    WHITE_QUEENSIDE,
 )
 import torch
 
@@ -31,35 +34,33 @@ class AbstractNetwork(HeuristicInterface):
     @staticmethod
     def board_to_tensor(state, data_type=torch.int8):
         board_tensor = torch.zeros((11, 64), dtype=data_type)
-        piece_types = [
+        piece_types = (
             state[PAWN],
             state[KNIGHT],
             state[BISHOP],
             state[ROOK],
             state[QUEEN],
             state[KING],
-        ]
-        white_locations = state[WHITE]
-        black_locations = state[BLACK]
+        )
+        white_mask = state[WHITE]
+        black_mask = state[BLACK]
 
         for layer, bitboard in enumerate(piece_types):
-            white_bb_squares = bitboard & white_locations
-            if white_bb_squares:
-                white_ints = [SQUARES.index(sq) for sq in white_bb_squares]
-                board_tensor[layer, white_ints] = 1
+            white_idxs = [SQUARES.index(sq) for sq in (bitboard & white_mask)]
+            black_idxs = [SQUARES.index(sq) for sq in (bitboard & black_mask)]
+            if white_idxs:
+                board_tensor[layer, white_idxs] = 1
+            if black_idxs:
+                board_tensor[layer, black_idxs] = -1
 
-            black_bb_squares = bitboard & black_locations
-            if black_bb_squares:
-                black_ints = [SQUARES.index(sq) for sq in black_bb_squares]
-                board_tensor[layer, black_ints] = -1
-
-        if state.castling_rights.kingside(bulletchess.WHITE):
+        rights = state.castling_rights
+        if WHITE_KINGSIDE in rights:
             board_tensor[6, :] = 1
-        if state.castling_rights.queenside(bulletchess.WHITE):
+        if WHITE_QUEENSIDE in rights:
             board_tensor[7, :] = 1
-        if state.castling_rights.kingside(bulletchess.BLACK):
+        if BLACK_KINGSIDE in rights:
             board_tensor[8, :] = 1
-        if state.castling_rights.queenside(bulletchess.BLACK):
+        if BLACK_QUEENSIDE in rights:
             board_tensor[9, :] = 1
         if state.turn is WHITE:
             board_tensor[10, :] = 1

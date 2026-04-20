@@ -81,16 +81,12 @@ def main():
         dataset,
         batch_size=batch_size,
         shuffle=True,
-        num_workers=6,
-        persistent_workers=True,
         pin_memory=True,
     )
     test_loader = DataLoader(
         testset,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=6,
-        persistent_workers=True,
         pin_memory=True,
     )
 

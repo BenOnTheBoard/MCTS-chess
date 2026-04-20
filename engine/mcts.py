@@ -17,7 +17,7 @@ class MCTS:
         self.tree_evaluator = tree_evaluator
         self.network = network
         self.backpropagation_rule = backpropagation_rule
-        self.LRUCache = LRUCache(maxsize=100_000)
+        self.LRUCache = LRUCache(maxsize=50_000)
 
         self.set_position(position)
 
@@ -47,21 +47,18 @@ class MCTS:
             if child.visits == 0:
                 return child
 
-        best_node = None
         if node.turn is WHITE:
-            best_value = -float("inf")
-            for child in node.children:
-                child_value = self.tree_evaluator.evaluate(child, node)
-                if child_value > best_value:
-                    best_value = child_value
-                    best_node = child
+            sign = -1
         else:
-            best_value = float("inf")
-            for child in node.children:
-                child_value = self.tree_evaluator.evaluate(child, node)
-                if child_value < best_value:
-                    best_value = child_value
-                    best_node = child
+            sign = 1
+
+        best_node = None
+        best_value = sign * float("inf")
+        for child in node.children:
+            child_value = self.tree_evaluator.evaluate(child, node)
+            if sign * child_value < sign * best_value:
+                best_value = child_value
+                best_node = child
 
         return best_node
 
@@ -71,18 +68,21 @@ class MCTS:
         if state in CHECKMATE or state in DRAW:
             return
 
+        if node.turn is WHITE:
+            child_turn = BLACK
+        else:
+            child_turn = WHITE
+
         flat_dist = move_distribution.flatten()
-        node.children = []
-        for move in state.legal_moves():
-            move_idx = self.network.move_to_flat_index(move)
-            prior = flat_dist[move_idx]
-
-            if node.turn is WHITE:
-                child_turn = BLACK
-            else:
-                child_turn = WHITE
-
-            node.children.append(Node(move, child_turn, prior.item(), node))
+        node.children = [
+            Node(
+                move,
+                child_turn,
+                flat_dist[self.network.move_to_flat_index(move)].item(),
+                node,
+            )
+            for move in state.legal_moves()
+        ]
 
     def evaluate_state(self, state):
         cached_pair = self.LRUCache.get(state)

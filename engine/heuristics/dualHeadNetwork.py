@@ -1,7 +1,6 @@
 from bulletchess import CHECKMATE, DRAW
 import torch
 import torch.nn as nn
-from torch.nn.functional import softmax
 
 from engine.heuristics.abstractPolicyNetwork import AbstractPolicyNetwork
 from engine.heuristics.modules import ResidualBlock
@@ -25,15 +24,6 @@ class DualHeadNetwork(AbstractPolicyNetwork):
 
         value, policy = self.tensor_eval(state)
         return value.item(), policy
-
-    def get_masked_move_distribution(self, state):
-        value, distribution = self.tensor_eval(state)
-        dist_shape = distribution.shape
-        dist_soft = softmax(distribution.view(-1), dim=0).view(dist_shape)
-
-        mask = self.board_to_legal_moves_mask(state)
-
-        return value, dist_soft * mask
 
 
 class DualHeadModule(nn.Module):
