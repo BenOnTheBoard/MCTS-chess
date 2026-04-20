@@ -42,28 +42,24 @@ class DualHeadModule(nn.Module):
 
         self.body = nn.Sequential(
             nn.Conv2d(11, 16, kernel_size=3, padding=1),
-            ResidualBlock(16, 32),
-            ResidualBlock(32, 64),
-            ResidualBlock(64, 64),
-            ResidualBlock(64, 64),
-        )  # 64x8x8
+            ResidualBlock(16, 16),
+            ResidualBlock(16, 16),
+            ResidualBlock(16, 16),
+        )
 
-        self.value_head = nn.Sequential(
-            nn.Conv2d(64, 1, kernel_size=1),
+        self.value_phase_one = nn.Sequential(
+            nn.Conv2d(16, 1, kernel_size=1),
             nn.BatchNorm2d(1),
             nn.ReLU(),
             nn.Flatten(),
-            nn.Linear(64, 256),
+            nn.Linear(64, 32),
             nn.ReLU(),
-            nn.Linear(256, 1),
+            nn.Linear(32, 1),
             nn.Tanh(),
         )
 
         self.policy_head = nn.Sequential(
-            nn.Conv2d(64, 128, kernel_size=1),
-            nn.BatchNorm2d(128),
-            nn.ReLU(),
-            nn.Conv2d(128, 73, kernel_size=1),
+            nn.Conv2d(16, 73, kernel_size=1),
         )
 
     def forward(self, x):

@@ -45,7 +45,7 @@ class MaterialDualHeadModule(nn.Module):
             ResidualBlock(16, 32),
             ResidualBlock(32, 32),
             ResidualBlock(32, 32),
-        )  # 64x8x8
+        )
 
         self.value_phase_one = nn.Sequential(
             nn.Conv2d(32, 1, kernel_size=1),
