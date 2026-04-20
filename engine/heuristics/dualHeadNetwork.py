@@ -37,7 +37,7 @@ class DualHeadModule(nn.Module):
             ResidualBlock(16, 16),
         )
 
-        self.value_phase_one = nn.Sequential(
+        self.value_head = nn.Sequential(
             nn.Conv2d(16, 1, kernel_size=1),
             nn.BatchNorm2d(1),
             nn.ReLU(),
