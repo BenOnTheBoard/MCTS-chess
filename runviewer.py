@@ -31,7 +31,7 @@ def pprint_principal_variation(node, limit=1_000):
 
 
 def main():
-    model = torch.load("models/mat_dhn.pt", weights_only=False, map_location="cpu")
+    model = torch.load("models/new_mat_dhn.pt", weights_only=False, map_location="cpu")
     network = MaterialDualHeadNetwork(model)
     NODE_LIMIT = 50_000
 

@@ -6,8 +6,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-from engine.heuristics.dualHeadNetwork import DualHeadNetwork
-
+from engine.heuristics.MatDHNetwork import MaterialDualHeadNetwork
 
 class PolicyValueDataset(Dataset):
     def __init__(self, filename, board_conversion, move_conversion):
@@ -56,18 +55,18 @@ def process_batch(network, batch, value_loss_fn, policy_loss_fn):
 
 
 def main():
-    model = None
-    network_type = DualHeadNetwork
+    model = torch.load("models/mat_dhn.pt", weights_only=False)
+    network_type = MaterialDualHeadNetwork
     network = network_type(model=model)
     network.model = network.model.to("xpu")
 
     data_filename = "data/DHRand.txt"
     tests_filename = "data/DHTest.txt"
-    output_filename = "models/new_dhn.pt"
+    output_filename = "models/new_mat_dhn.pt"
     value_loss_fn = torch.nn.MSELoss(reduction="sum")
     policy_loss_fn = torch.nn.CrossEntropyLoss(reduction="sum")
     total_epochs = 100
-    init_learning_rate = 1e-4
+    init_learning_rate = 1e-3
     batch_size = 256
 
     dataset = PolicyValueDataset(
@@ -81,12 +80,16 @@ def main():
         dataset,
         batch_size=batch_size,
         shuffle=True,
+        num_workers=4,
+        persistent_workers=True,
         pin_memory=True,
     )
     test_loader = DataLoader(
         testset,
         batch_size=batch_size,
         shuffle=False,
+        num_workers=4,
+        persistent_workers=True,
         pin_memory=True,
     )
 
