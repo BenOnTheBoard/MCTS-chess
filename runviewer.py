@@ -8,14 +8,14 @@ from engine.treeEvaluators.AlphaPUCT import AlphaPUCT
 
 def pprint_children_recursive(node, limit=1_000, depth=0):
     spacer = "  " * depth
-    for child in node.children:
+    for child in sorted(node.children, key=lambda n: n.visits):
         if child.visits >= limit:
             print(f"{spacer}{child.move}")
             pprint_children_recursive(child, limit, depth + 1)
 
 
 def pprint_children(node):
-    for child in node.children:
+    for child in sorted(node.children, key=lambda n: n.visits):
         print(f"\t{child.move}\t{child.prior:.2f}\t{child.quality:.2f}\t{child.visits}")
 
 
@@ -23,8 +23,8 @@ def pprint_principal_variation(node, limit=1_000):
     cur_node = node
     moves_uci = []
     while cur_node.children and cur_node.visits > limit:
-        cur_node.children.sort(key=lambda n: n.visits)
-        cur_node = cur_node.children[-1]
+        children = sorted(cur_node.children, key=lambda n: n.visits)
+        cur_node = children[-1]
         moves_uci.append(cur_node.move.uci())
     print(" ".join(moves_uci))
 
