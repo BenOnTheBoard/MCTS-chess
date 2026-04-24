@@ -1,7 +1,6 @@
 import bulletchess
 import torch
 
-from engine.backpropagationRules.meanChild import MeanChild
 from engine.heuristics.MatDHNetwork import MaterialDualHeadNetwork
 from engine.mcts import MCTS
 from engine.treeEvaluators.AlphaPUCT import AlphaPUCT
@@ -31,19 +30,12 @@ def pprint_principal_variation(node, limit=1_000):
 
 
 def main():
-    model = torch.load("models/new_mat_dhn.pt", weights_only=False, map_location="cpu")
+    model = torch.load("models/mat_dhn.pt", weights_only=False, map_location="cpu")
     network = MaterialDualHeadNetwork(model)
-    NODE_LIMIT = 50_000
+    NODE_LIMIT = 10_000
 
-    board = bulletchess.Board.from_fen(
-        "r2q1rk1/pp1bppbp/2np1np1/8/2BNP3/2N1BP2/PPPQ2PP/2KR3R b - - 6 10"
-    )
-    mcts = MCTS(
-        board,
-        AlphaPUCT(2),
-        network,
-        MeanChild(),
-    )
+    board = bulletchess.Board()
+    mcts = MCTS(board, AlphaPUCT(2), network)
 
     while True:
         move = mcts.get_move(node_count=NODE_LIMIT, tqdm_on=True)

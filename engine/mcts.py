@@ -1,8 +1,7 @@
-from bulletchess import CHECKMATE, DRAW, WHITE, BLACK
+from bulletchess import CHECKMATE, DRAW, WHITE
 from tqdm import tqdm
 
 from engine.node import Node
-from engine.utils import get_best_move
 from engine.LRUCache import LRUCache
 
 
@@ -12,11 +11,9 @@ class MCTS:
         position,
         tree_evaluator,
         network,
-        backpropagation_rule,
     ):
         self.tree_evaluator = tree_evaluator
         self.network = network
-        self.backpropagation_rule = backpropagation_rule
         self.LRUCache = LRUCache(maxsize=50_000)
 
         self.set_position(position)
@@ -26,21 +23,14 @@ class MCTS:
         self.position = new_position.copy()
 
     def add_move(self, move):
-        found_child = False
+        self.position.apply(move)
         if self.root_node.children is not None:
             for child in self.root_node.children:
                 if child.move == move:
                     child.parent = None
                     self.root_node = child
-                    found_child = True
-                    break
-        if not found_child:
-            if self.root_node.turn is WHITE:
-                self.root_node = Node(None, BLACK, None, None)
-            else:
-                self.root_node = Node(None, WHITE, None, None)
-
-        self.position.apply(move)
+                    return
+        self.root_node = Node(None, ~self.root_node.turn, None, None)
 
     def tree_policy(self, node):
         for child in node.children:
@@ -68,21 +58,16 @@ class MCTS:
         if state in CHECKMATE or state in DRAW:
             return
 
-        if node.turn is WHITE:
-            child_turn = BLACK
-        else:
-            child_turn = WHITE
-
         flat_dist = move_distribution.flatten()
-        node.children = [
+        node.children = tuple(
             Node(
                 move,
-                child_turn,
+                ~node.turn,
                 flat_dist[self.network.move_to_flat_index(move)].item(),
                 node,
             )
             for move in state.legal_moves()
-        ]
+        )
 
     def evaluate_state(self, state):
         cached_pair = self.LRUCache.get(state)
@@ -94,13 +79,12 @@ class MCTS:
         return eval_pair
 
     def propagate_updates(self, node, value):
-        while node.has_parent():
-            new_quality, next_value = self.backpropagation_rule.calculate(node, value)
+        while True:
+            new_quality = node.quality + (value - node.quality) / (node.visits + 1)
             node.update_quality(new_quality)
-            value = next_value
             node = node.parent
-        new_quality, _ = self.backpropagation_rule.calculate(node, value)
-        node.update_quality(new_quality)
+            if node is None:
+                return
 
     def get_move(self, node_count, tqdm_on=False):
         if tqdm_on:
@@ -120,4 +104,5 @@ class MCTS:
             self.expand_node(node, state, move_distribution)
             self.propagate_updates(node, result)
 
-        return get_best_move(self.root_node)
+        most_visited = max(self.root_node.children, key=lambda n: n.visits)
+        return most_visited.move
