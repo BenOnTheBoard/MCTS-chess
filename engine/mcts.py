@@ -1,4 +1,5 @@
 from bulletchess import CHECKMATE, DRAW, WHITE
+from torch.nn.functional import softmax
 from tqdm import tqdm
 
 from engine.node import Node
@@ -59,14 +60,16 @@ class MCTS:
             return
 
         flat_dist = move_distribution.flatten()
+        idxs = [self.network.move_to_flat_index(move) for move in state.legal_moves()]
+        probs = softmax(flat_dist[idxs], dim=0)
         node.children = tuple(
             Node(
                 move,
                 ~node.turn,
-                flat_dist[self.network.move_to_flat_index(move)].item(),
+                probs[i].item(),  # normalized prior
                 node,
             )
-            for move in state.legal_moves()
+            for i, move in enumerate(state.legal_moves())
         )
 
     def evaluate_state(self, state):
