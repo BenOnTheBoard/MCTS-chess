@@ -1,4 +1,4 @@
-from bulletchess import CHECKMATE, DRAW, WHITE
+from bulletchess import CHECKMATE, DRAW
 from torch.nn.functional import softmax
 from tqdm import tqdm
 
@@ -39,16 +39,12 @@ class MCTS:
             if child.visits == 0:
                 return child
 
-        if node.turn is WHITE:
-            sign = -1
-        else:
-            sign = 1
-
+        sign = OUTCOMES[node.turn]
         best_node = None
-        best_value = sign * float("inf")
+        best_value = -sign * float("inf")
         for child in node.children:
             child_value = self.tree_evaluator.evaluate(child, node)
-            if sign * child_value < sign * best_value:
+            if sign * child_value > sign * best_value:
                 best_value = child_value
                 best_node = child
 
