@@ -1,10 +1,8 @@
-from bulletchess import CHECKMATE, DRAW
 import torch
 import torch.nn as nn
 
 from engine.heuristics.abstractPolicyNetwork import AbstractPolicyNetwork
 from engine.heuristics.modules import ResidualBlock
-from engine.values import OUTCOMES
 
 
 class MaterialDualHeadNetwork(AbstractPolicyNetwork):
@@ -17,11 +15,6 @@ class MaterialDualHeadNetwork(AbstractPolicyNetwork):
         return tensor.view(1, 11, 8, 8)
 
     def evaluate(self, state):
-        if state in CHECKMATE:
-            return -OUTCOMES[state.turn], None
-        if state in DRAW:
-            return OUTCOMES[None], None
-
         value, policy = self.tensor_eval(state)
         return value.item(), policy
 

@@ -4,6 +4,7 @@ from tqdm import tqdm
 
 from engine.node import Node
 from engine.LRUCache import LRUCache
+from engine.values import OUTCOMES
 
 
 class MCTS:
@@ -54,21 +55,11 @@ class MCTS:
         return best_node
 
     def expand_node(self, node, state, move_distribution):
-        if node.children is not None or move_distribution is None:
-            return
-        if state in CHECKMATE or state in DRAW:
-            return
-
         flat_dist = move_distribution.flatten()
         idxs = [self.network.move_to_flat_index(move) for move in state.legal_moves()]
         probs = softmax(flat_dist[idxs], dim=0)
         node.children = tuple(
-            Node(
-                move,
-                ~node.turn,
-                probs[i].item(),  # normalized prior
-                node,
-            )
+            Node(move, ~node.turn, probs[i].item(), node)
             for i, move in enumerate(state.legal_moves())
         )
 
@@ -102,9 +93,14 @@ class MCTS:
                 node = self.tree_policy(node)
                 state.apply(node.move)
 
-            result, move_distribution = self.evaluate_state(state)
+            if state in CHECKMATE:
+                result = -OUTCOMES[state.turn]
+            elif state in DRAW:
+                result = OUTCOMES[None]
+            else:
+                result, move_distribution = self.evaluate_state(state)
+                self.expand_node(node, state, move_distribution)
 
-            self.expand_node(node, state, move_distribution)
             self.propagate_updates(node, result)
 
         most_visited = max(self.root_node.children, key=lambda n: n.visits)
