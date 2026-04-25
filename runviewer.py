@@ -3,7 +3,6 @@ import torch
 
 from engine.heuristics.MatDHNetwork import MaterialDualHeadNetwork
 from engine.mcts import MCTS
-from engine.treeEvaluators.AlphaPUCT import AlphaPUCT
 
 
 def pprint_children_recursive(node, limit=1_000, depth=0):
@@ -35,7 +34,7 @@ def main():
     NODE_LIMIT = 10_000
 
     board = bulletchess.Board()
-    mcts = MCTS(board, AlphaPUCT(3), network)
+    mcts = MCTS(board, network, 3)
 
     while True:
         move = mcts.get_move(node_count=NODE_LIMIT, tqdm_on=True)

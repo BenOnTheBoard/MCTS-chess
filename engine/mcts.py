@@ -1,4 +1,5 @@
-from bulletchess import CHECKMATE, DRAW
+from bulletchess import CHECKMATE, DRAW, WHITE
+from math import sqrt
 from torch.nn.functional import softmax
 from tqdm import tqdm
 
@@ -8,16 +9,10 @@ from engine.values import OUTCOMES
 
 
 class MCTS:
-    def __init__(
-        self,
-        position,
-        tree_evaluator,
-        network,
-    ):
-        self.tree_evaluator = tree_evaluator
+    def __init__(self, position, network, exploration):
         self.network = network
         self.LRUCache = LRUCache(maxsize=50_000)
-
+        self.exploration = exploration
         self.set_position(position)
 
     def set_position(self, new_position):
@@ -34,21 +29,23 @@ class MCTS:
                     return
         self.root_node = Node(None, ~self.root_node.turn, None, None)
 
+    def PUCT(self, child, node):
+        exploring_term = sqrt(node.visits) / (1 + child.visits)
+        delta = self.exploration * child.prior * exploring_term
+
+        if node.turn is WHITE:
+            return child.quality + delta
+        else:
+            return child.quality - delta
+
     def tree_policy(self, node):
         for child in node.children:
             if child.visits == 0:
                 return child
 
-        sign = OUTCOMES[node.turn]
-        best_node = None
-        best_value = -sign * float("inf")
-        for child in node.children:
-            child_value = self.tree_evaluator.evaluate(child, node)
-            if sign * child_value > sign * best_value:
-                best_value = child_value
-                best_node = child
-
-        return best_node
+        if node.turn is WHITE:
+            return max(node.children, key=lambda c: self.PUCT(c, node))
+        return min(node.children, key=lambda c: self.PUCT(c, node))
 
     def expand_node(self, node, state, move_distribution):
         flat_dist = move_distribution.flatten()
