@@ -1,5 +1,4 @@
 from bulletchess import QUEEN, SQUARES, PIECE_TYPES
-import torch
 
 from engine.heuristics.abstractNetwork import AbstractNetwork
 from engine.values import DIRECTIONS, KNIGHTS_MOVES
@@ -47,14 +46,3 @@ class AbstractPolicyNetwork(AbstractNetwork):
         )
         row, col = divmod(SQUARES.index(move.origin), 8)
         return plane * 64 + row * 8 + col
-
-    @staticmethod
-    def board_to_legal_moves_mask(board):
-        tensor = torch.zeros((73, 8, 8), dtype=torch.float32)
-        for move in board.legal_moves():
-            plane = AbstractPolicyNetwork.move_to_plane(
-                move.origin, move.destination, move.promotion
-            )
-            row, col = divmod(SQUARES.index(move.origin), 8)
-            tensor[plane, row, col] = 1.0
-        return tensor

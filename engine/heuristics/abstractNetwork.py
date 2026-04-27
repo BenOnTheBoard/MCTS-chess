@@ -17,6 +17,8 @@ import torch
 
 from engine.heuristics.heuristicInterface import HeuristicInterface
 
+SQUARE_MAP = {sq: i for i, sq in enumerate(SQUARES)}
+
 
 class AbstractNetwork(HeuristicInterface):
     def __init__(self, model=None):
@@ -43,8 +45,8 @@ class AbstractNetwork(HeuristicInterface):
         black_mask = state[BLACK]
 
         for layer, bitboard in enumerate(piece_types):
-            white_idxs = [SQUARES.index(sq) for sq in (bitboard & white_mask)]
-            black_idxs = [SQUARES.index(sq) for sq in (bitboard & black_mask)]
+            white_idxs = [SQUARE_MAP[sq] for sq in (bitboard & white_mask)]
+            black_idxs = [SQUARE_MAP[sq] for sq in (bitboard & black_mask)]
             if white_idxs:
                 board_tensor[layer, white_idxs] = 1
             if black_idxs:
@@ -52,21 +54,21 @@ class AbstractNetwork(HeuristicInterface):
 
         rights = state.castling_rights
         if WHITE_KINGSIDE in rights:
-            board_tensor[6, :] = 1
+            board_tensor[6].fill_(1)
         if WHITE_QUEENSIDE in rights:
-            board_tensor[7, :] = 1
+            board_tensor[7].fill_(1)
         if BLACK_KINGSIDE in rights:
-            board_tensor[8, :] = 1
+            board_tensor[8].fill_(1)
         if BLACK_QUEENSIDE in rights:
-            board_tensor[9, :] = 1
+            board_tensor[9].fill_(1)
         if state.turn is WHITE:
-            board_tensor[10, :] = 1
+            board_tensor[10].fill_(1)
 
         return board_tensor
 
     def tensor_eval(self, state):
         input_vector = self.board_to_tensor(state, data_type=torch.float32)
-        with torch.no_grad():
+        with torch.inference_mode():
             output_vector = self.model(input_vector)
         return output_vector
 
