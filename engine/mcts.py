@@ -46,15 +46,15 @@ class MCTS:
                 return child
 
         evaluator = self.PUCT(node)
-        return max(node.children, key=lambda c: evaluator(c))
+        return max(node.children, key=evaluator)
 
     def expand_node(self, node, state, move_distribution):
+        legal_moves = tuple(state.legal_moves())
         flat_dist = move_distribution.flatten()
-        idxs = [self.network.move_to_flat_index(move) for move in state.legal_moves()]
+        idxs = [self.network.move_to_flat_index(move) for move in legal_moves]
         probs = softmax(flat_dist[idxs], dim=0)
         node.children = tuple(
-            Node(move, ~node.turn, probs[i].item(), node)
-            for i, move in enumerate(state.legal_moves())
+            Node(m, ~node.turn, p.item(), node) for p, m in zip(probs, legal_moves)
         )
 
     def evaluate_state(self, state):
@@ -67,12 +67,10 @@ class MCTS:
         return eval_pair
 
     def propagate_updates(self, node, value):
-        while True:
+        while node is not None:
             new_quality = node.quality + (value - node.quality) / (node.visits + 1)
             node.update_quality(new_quality)
             node = node.parent
-            if node is None:
-                return
 
     def get_move(self, node_count, tqdm_on=False):
         if tqdm_on:
@@ -82,7 +80,6 @@ class MCTS:
 
         for _ in counter:
             node, state = self.root_node, self.position.copy()
-
             while not node.is_leaf():
                 node = self.tree_policy(node)
                 state.apply(node.move)
