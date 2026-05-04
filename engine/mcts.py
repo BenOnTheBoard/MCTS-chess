@@ -68,8 +68,7 @@ class MCTS:
 
     def propagate_updates(self, node, value):
         while node is not None:
-            new_quality = node.quality + (value - node.quality) / (node.visits + 1)
-            node.update_quality(new_quality)
+            node.update_quality(value)
             node = node.parent
 
     def get_move(self, node_count, tqdm_on=False):

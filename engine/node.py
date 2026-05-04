@@ -8,11 +8,9 @@ class Node:
         self.quality = 0
         self.visits = 0
 
-    def update_quality(self, quality):
-        if quality > 1 or quality < -1:
-            raise ValueError("Qualities must be between -1 and 1.")
-        self.quality = quality
+    def update_quality(self, value):
         self.visits += 1
+        self.quality += (value - self.quality) / self.visits
 
     def is_leaf(self):
         return self.children is None
