@@ -9,17 +9,15 @@ class LRUCache:
     def get(self, state):
         key = state.__hash__()
         if key in self.cache:
-            self.cache.move_to_end(key)
+            self.cache.move_to_end(key, last=False)
             return self.cache[key]
         return None
 
     def put(self, state, value):
         key = state.__hash__()
-        if key in self.cache:
-            self.cache.move_to_end(key)
         self.cache[key] = value
         if len(self.cache) > self.maxsize:
-            self.cache.popitem(last=False)
+            self.cache.popitem()
 
     def invalidate(self, state):
         key = state.__hash__()
