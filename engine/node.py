@@ -5,7 +5,7 @@ class Node:
         self.prior = prior
         self.quality = 0
         self.visits = 0
-        self.variance = 0
+        self.variance = 2.5 * 10 ** (-4)
 
     def update(self, value):
         self.visits += 1

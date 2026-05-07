@@ -37,10 +37,11 @@ def pprint_principal_variation(node, limit=1_000):
 def main():
     model = torch.load("models/mat_dhn.pt", weights_only=False, map_location="cpu")
     network = MaterialDualHeadNetwork(model)
-    NODE_LIMIT = 10_000
+    NODE_LIMIT = 100_000
 
     board = bulletchess.Board()
-    mcts = MCTS(board, network, 3)
+    board.apply(bulletchess.Move.from_uci("e2e4"))
+    mcts = MCTS(board, network, (1.414, 3))
 
     while True:
         move = mcts.get_move(node_count=NODE_LIMIT, tqdm_on=True)

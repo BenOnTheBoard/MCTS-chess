@@ -1,5 +1,5 @@
 from bulletchess import CHECKMATE, DRAW
-from math import sqrt
+from math import log, sqrt
 from torch.nn.functional import softmax
 from tqdm import tqdm
 
@@ -9,10 +9,10 @@ from engine.values import OUTCOMES
 
 
 class MCTS:
-    def __init__(self, position, network, exploration):
+    def __init__(self, position, network, constants):
         self.network = network
         self.LRUCache = LRUCache(maxsize=50_000)
-        self.exploration = exploration
+        self.constants = constants
         self.set_position(position)
 
         self.indexer = self.network.move_to_flat_index
@@ -33,12 +33,15 @@ class MCTS:
 
     def PUCT(self, node, turn):
         sqrtv = sqrt(node.visits)
+        logv = log(node.visits)
         sign = OUTCOMES[turn]
-        c = self.exploration * sqrt(node.variance)
+        c1, c2 = self.constants
 
         def PUCT_node(child):
-            exploring_term = sqrtv / (1 + child.visits)
-            delta = c * child.prior * exploring_term
+            p = child.prior
+            s = sqrt(child.variance)
+
+            delta = (c1 * s * sqrtv + c2 * logv) * (p / (1 + child.visits))
             return sign * child.quality + delta
 
         return PUCT_node
