@@ -1,4 +1,5 @@
 import bulletchess
+from math import sqrt
 import torch
 
 from engine.heuristics.MatDHNetwork import MaterialDualHeadNetwork
@@ -15,7 +16,12 @@ def pprint_children_recursive(node, limit=1_000, depth=0):
 
 def pprint_children(node):
     for child in sorted(node.children, key=lambda n: n.visits):
-        print(f"\t{child.move}\t{child.prior:.2f}\t{child.quality:.2f}\t{child.visits}")
+        if child.visits > 1:
+            p = child.prior
+            mu = child.quality
+            var = child.variance
+            n = child.visits
+            print(f"\t{child.move}\t{p:.2f}\t{mu:.2f}±{sqrt(var):.2f}\t{n}")
 
 
 def pprint_principal_variation(node, limit=1_000):

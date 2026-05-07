@@ -34,10 +34,11 @@ class MCTS:
     def PUCT(self, node, turn):
         sqrtv = sqrt(node.visits)
         sign = OUTCOMES[turn]
+        c = self.exploration * sqrt(node.variance)
 
         def PUCT_node(child):
             exploring_term = sqrtv / (1 + child.visits)
-            delta = self.exploration * child.prior * exploring_term
+            delta = c * child.prior * exploring_term
             return sign * child.quality + delta
 
         return PUCT_node
@@ -67,10 +68,11 @@ class MCTS:
         return eval_pair
 
     def get_move(self, node_count, tqdm_on=False):
+        rem_nodes = node_count - self.root_node.visits
         if tqdm_on:
-            counter = tqdm(range(node_count))
+            counter = tqdm(range(rem_nodes))
         else:
-            counter = range(node_count)
+            counter = range(rem_nodes)
 
         for _ in counter:
             node, state = self.root_node, self.position.copy()
@@ -89,7 +91,7 @@ class MCTS:
                 self.expand_node(node, state, move_distribution)
 
             for path_node in path:
-                path_node.update_quality(result)
+                path_node.update(result)
 
         most_visited = max(self.root_node.children, key=lambda n: n.visits)
         return most_visited.move

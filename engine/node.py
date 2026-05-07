@@ -5,7 +5,11 @@ class Node:
         self.prior = prior
         self.quality = 0
         self.visits = 0
+        self.variance = 0
 
-    def update_quality(self, value):
+    def update(self, value):
         self.visits += 1
-        self.quality += (value - self.quality) / self.visits
+        d1 = value - self.quality
+        self.quality += d1 / self.visits
+        d2 = value - self.quality
+        self.variance += (d1 * d2 - self.variance) / self.visits
