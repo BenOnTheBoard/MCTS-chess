@@ -40,7 +40,7 @@ def main():
     NODE_LIMIT = 10_000
 
     board = bulletchess.Board()
-    mcts = MCTS(board, network, 3)
+    mcts = MCTS(board, network, 1.225)
 
     while True:
         move = mcts.get_move(node_count=NODE_LIMIT, tqdm_on=True)
