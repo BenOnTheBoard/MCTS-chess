@@ -13,7 +13,6 @@ from bulletchess import (
     WHITE_KINGSIDE,
     WHITE_QUEENSIDE,
 )
-from bulletchess.utils import attack_mask
 import torch
 
 from engine.heuristics.heuristicInterface import HeuristicInterface
@@ -33,7 +32,7 @@ class AbstractNetwork(HeuristicInterface):
 
     @staticmethod
     def board_to_tensor(state, data_type=torch.int8):
-        board_tensor = torch.zeros((13, 64), dtype=data_type)
+        board_tensor = torch.zeros((11, 64), dtype=data_type)
         piece_types = (
             state[PAWN],
             state[KNIGHT],
@@ -53,24 +52,17 @@ class AbstractNetwork(HeuristicInterface):
             if black_idxs:
                 board_tensor[layer, black_idxs] = -1
 
-        white_attack_idxs = [SQUARE_MAP[sq] for sq in attack_mask(state, WHITE)]
-        black_attack_idxs = [SQUARE_MAP[sq] for sq in attack_mask(state, BLACK)]
-        if white_attack_idxs:
-            board_tensor[6, white_attack_idxs] = 1
-        if black_attack_idxs:
-            board_tensor[7, black_attack_idxs] = -1
-
         rights = state.castling_rights
         if WHITE_KINGSIDE in rights:
-            board_tensor[8].fill_(1)
+            board_tensor[6].fill_(1)
         if WHITE_QUEENSIDE in rights:
-            board_tensor[9].fill_(1)
+            board_tensor[7].fill_(1)
         if BLACK_KINGSIDE in rights:
-            board_tensor[10].fill_(1)
+            board_tensor[8].fill_(1)
         if BLACK_QUEENSIDE in rights:
-            board_tensor[11].fill_(1)
+            board_tensor[9].fill_(1)
         if state.turn is WHITE:
-            board_tensor[12].fill_(1)
+            board_tensor[10].fill_(1)
 
         return board_tensor
 
