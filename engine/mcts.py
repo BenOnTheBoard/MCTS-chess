@@ -55,7 +55,7 @@ class MCTS:
         return max(node.children, key=evaluator)
 
     def expand_node(self, node, state, move_dist):
-        legal_moves = tuple(state.legal_moves())
+        legal_moves = state.legal_moves()
         flat_dist = move_dist.flatten()
         idxs = [self.indexer(move) for move in legal_moves]
         probs = softmax(flat_dist[idxs], dim=0).tolist()
