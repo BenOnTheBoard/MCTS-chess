@@ -22,6 +22,9 @@ class MCTS:
         self.root_node = Node(None, None)
         self.position = new_position.copy()
 
+    def set_constants(self, new_constants):
+        self.constants = new_constants
+
     def add_move(self, move):
         self.position.apply(move)
         if self.root_node.children is not None:
